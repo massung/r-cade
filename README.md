@@ -140,6 +140,10 @@ Returns the button state of the RIGHT arrow key.
 
 Returns the button state of the LEFT arrow key.
 
+(**btn-any**)
+
+Returns `#t` if any of the following buttons are pressed: START, SELECT, QUIT, Z, or X.
+
 (**btn-mouse**)
 
 Returns the button state of the LEFT mouse button.
