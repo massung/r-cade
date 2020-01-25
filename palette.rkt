@@ -34,3 +34,12 @@ All rights reserved.
           (sfColor_fromRGBA #x83 #x76 #x9c #xff)
           (sfColor_fromRGBA #xff #x77 #xab #xff)
           (sfColor_fromRGBA #xff #xcc #xaa #xff)))
+
+;; ----------------------------------------------------
+
+(define (set-color! index red green blue)
+  (let ([n (bitwise-and index #x0f)]
+        [r (bitwise-and index #xff)]
+        [g (bitwise-and index #xff)]
+        [b (bitwise-and index #xff)])
+    (vector-set! palette n (sfColor_fromRGBA r g b #xff))))

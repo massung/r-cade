@@ -17,9 +17,11 @@ All rights reserved.
 (require "video.rkt")
 (require "game.rkt")
 (require "input.rkt")
+(require "palette.rkt")
 (require "draw.rkt")
 (require "voice.rkt")
 (require "sound.rkt")
+(require "music.rkt")
 (require "audio.rkt")
 
 ;; ----------------------------------------------------
@@ -57,6 +59,7 @@ All rights reserved.
  ; draw
  cls
  color
+ set-color!
  draw
  text
  line
@@ -77,11 +80,10 @@ All rights reserved.
  waveform
  tone
  sweep
-
- ; music
- ; TODO: ??
  
  ; audio
+ sound?
+ tune?
  play-sound
  stop-sound
  make-tune
