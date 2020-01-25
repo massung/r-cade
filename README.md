@@ -13,8 +13,10 @@ More on these later in the README. For now...
 Here are some of the example programs:
 
 ![][twinkle]
-![][tetris]
+---
 ![][breakout]
+---
+![][tetris]
 
 ## Installation
 
@@ -76,9 +78,9 @@ I wanted to make something that could be as simple as QBASIC was for me when I w
 
 ### No External Assets
 
-You will never find code in `r-cade` for loading of sprites, sounds, music, or any other kind of asset. This is for two reasons:
+You will never find external asset loading code in `r-cade` (e.g. sprites, sounds, levels, etc). This is for two reasons:
 
-1. Often times what holds kids back is the idea that they can't draw and don't know how to make good sounds, etc.
+1. Often times what holds kids back is the idea that they can't draw or create good sounds, etc. Or they are lacking access to the tools to make them.
 
 2. Image and audio assets end up abstracting away much of what's actually happening under-the-hood. This is great later on, but if you begin too abstracted, I believe it can hinder long-term growth.
 
@@ -86,7 +88,7 @@ And because of this...
 
 ### Retro
 
-For those of us who grew up programming the Trash-80, C64, Atari 2600, GameBoy, NES, etc. we learned a **lot** about what was really going on. I want kids today to be able to learn these things as well.
+For those of us who grew up programming the Trash-80, C64, Atari 2600, GameBoy, NES, etc. we learned a **lot** about what was really going on: video memory, wave functions, interrupts, et al. I want kids today to be able to learn these things as well, just in a safer environment where they can experiment without having to worry about getting it "wrong".
 
 A great example of this is sound. How does your speaker _actually_ play a C# note? Programming is what taught me about wave frequencies, wave functions, sound envelopes, etc. Now, with `r-cade`, it's trivial to play around with these things and hear the differences immediately:
 
@@ -98,6 +100,7 @@ A great example of this is sound. How does your speaker _actually_ play a C# not
 Even better, it's possible for them to create their own `instrument` and `envelope` functions and really start having fun learning about sound waves!
 
 With drawing, I wanted every pixel to be a single bit and sprites to be as simple as the [CHIP-8][chip-8]. With 1-bit video memory it's pretty amazing what you can accomplish. The only difference here is I've added 16 colors into the mix. But, each sprite is a single color. Also, video memory is preserved just like on hardware. Unless it is cleared by the programmer, the bits aren't going anywhere.
+
 
 [racket]: https://racket-lang.org/
 [csfml]: https://www.sfml-dev.org/download/csfml/
