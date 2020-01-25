@@ -219,11 +219,11 @@ All audio is played by composing 8-bit PCM WAV data.
 
 (**waveform** _curve seconds #:instrument sin #:envelope (const 1)_)
 
-All sounds are made using the `waveform` function. The _curve_ argument is a function that is given a single value in the range of [0.0, 1.0] and should return a frequency to play at that time; 0.0 is the beginning of the waveform and 1.0 is the end. The _seconds_ parameter is how long the sound should play for.
+All sounds are made using the `waveform` function. The _curve_ argument is a function that is given a single value in the range of [0.0, 1.0] and should return a frequency to play at that time; 0.0 is the beginning of the waveform and 1.0 is the end. The _seconds_ parameter defines the length of the waveform.
 
-The _instrument_ is the wave function to use and defaults to a simple sine wave. Other - built in - wave functions include `sawtooth-wave`, `square-wave`, `triangle-wave`, and `noise-wave`. But the user can define their own function and use it as well.
+The _instrument_ is the wave function to use and defaults to a simple sine wave. Other - built in - wave functions include `sawtooth-wave`, `square-wave`, `triangle-wave`, and `noise-wave`. But the user can define their own function and use it as well. The range of the parameter send to the _instrument_ function should be assumed [0.0, 2pi] and the return value should range from -1.0 to 1.0.
 
-The _envelope_ is an amplitude multiplier. It is a function which - like _curve_ - is given a single value in the range [0.0, 1.0] indicating where in the sound it is. It should return a value in the range [0.0, 1.0], where 0.0 indicates a null amplitude and 1.0 indicates full amplitude. The default is to simply play the entire sound at full amplitude. Three built-in envelopes include `z-envelope` and `s-envelope`. There is also an `envelope` function that helps with the creation of your own envelopes.
+The _envelope_ is an amplitude multiplier. It is a function which - like _curve_ - is given a single value in the range [0.0, 1.0] indicating where in the sound it is. It should return a value in the range [0.0, 1.0], where 0.0 indicates a null amplitude and 1.0 indicates full amplitude. The default is to simply play the entire sound at full amplitude. Other, built-in envelopes include `z-envelope` and `s-envelope`. There is also an `envelope` function that helps with the creation of your own envelopes.
 
 (**envelope** _y . ys_)
 
@@ -266,9 +266,11 @@ Parses the _notes_ string and builds a waveform for each note. Notes are in the 
 * `"C#3--"` is a C-sharp in 3rd octave and held for a total of 3 quarter-notes time;
 * `"Bb"` is a B-flat held for a single quarter-note and uses the octave of whatever note preceeded it;
 
+The default octave is 4, but once an octave is specified for a note then that becomes the new default octave for subsequent notes.
+
 How long each note is held for (in seconds) is determined by the _bpm_ (beats per minute) parameter. A single beat is assumed to be a single quarter-note. So, with a little math, the `C#--` at a rate of 160 BPM would play for 1.125 seconds (3 beats * 60 s/m ÷ 160 bpm). It is not possible to specify 1/8th and 1/16th notes. In order to achieve them, increase the _bpm_ appropriately.
 
-All note waveforms are played with an ADSR (attack, decay, sustain, release) envelope. This is not allowed to be overridden.
+All note waveforms are played with an ADSR (attack, decay, sustain, release) envelope. This cannot be overridden.
 
 (**tune?** _tune_)
 
@@ -285,6 +287,16 @@ Stops any music currently playing.
 (**pause-music** _[pause #t]_)
 
 If _pause_ is `#t` then the currently playing music is paused, otherwise it is resumed. If the music was not paused already and resumed, the music will restart from the beginning.
+
+## Coming Features
+
+Some things not yet implemented in the library, but planned:
+
+* Gamepad support
+* Custom fonts
+* Channel mixing
+
+Additionally, my next big feature will be a custom `#lang` for making `r-cade` games in a much more BASIC-like language.
 
 ## Goals
 
