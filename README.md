@@ -12,11 +12,9 @@ More on these later in the README. For now...
 
 Here are some of the example programs:
 
-![][twinkle]
+![The Classic... Tetris][tetris]
 ---
-![][breakout]
----
-![][tetris]
+![Breakout!][breakout]
 
 ## Installation
 
