@@ -295,6 +295,7 @@ Some things not yet implemented in the library, but planned:
 * Gamepad support
 * Custom fonts
 * Channel mixing
+* Fullscreen shader effects
 
 Additionally, my next big feature will be a custom `#lang` for making `r-cade` games in a much more BASIC-like language.
 
