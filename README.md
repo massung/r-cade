@@ -24,15 +24,9 @@ Assuming you have [Racket][racket] downloaded and installed for your platform, y
 $ raco pkg install r-cade
 ```
 
-The only dependency `r-cade` has are [CSFML][csfml] bindings. The bindings for it can be found [here][csfml-package], but should automatically be installed as well by `raco`.
+The only Racket dependency `r-cade` has are [CSFML][csfml] bindings. The bindings for it can be found [here][csfml-package], but should automatically be installed as well by `raco`.
 
-You will need to actually to install [CSFML][csfml] for your platform manually. This is just a simple matter of downloading the package for your platform and installing it appropriately. If you want to use audio with `r-cade`, you will also need to have [OpenAL][openal] and [libsndfile][libsndfile] as well.
-
-*TODO: Maybe provide some detailed instructions on installing dynamic libraries?*
-
-Be sure that all the dynamic libraries downloaded are available in your `PATH` (or whatever is correct for your platform).
-
-*NOTE: I develop on Windows, but all the required dependencies are cross platform with MacOS X and Linux.*
+R-cade does have a few 3rd-party dependencies. Instructions for installing those may be found in [DEPENDENCIES.md][dependencies].
 
 ## Quickstart
 
@@ -352,3 +346,4 @@ With drawing, I wanted every pixel to be a single bit and sprites to be as simpl
 [breakout]: https://raw.github.com/massung/r-cade/master/screenshots/breakout.gif
 [tetris]: https://raw.github.com/massung/r-cade/master/screenshots/tetris.gif
 [pico-8]: https://www.lexaloffle.com/pico-8.php
+[dependencies]: https://github.com/massung/r-cade/tree/master/DEPENDENCIES.md
