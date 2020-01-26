@@ -173,7 +173,7 @@ Some examples:
 
 (**cls**)
 
-Clears video memory.
+Clears video memory. Remember that video memory isn't magically wiped each frame.
 
 (**color** n)
 
@@ -197,7 +197,7 @@ The above would draw a 3x3 sprite that looks like + sign to the pixels at (10,12
 
 (**text** _x y s_)
 
-Draw the string _s_ (note: under the hood `(~a _s)` is used, so _s_ can be of any type) at (_x_,_y_). The default font is a fixed-width ASCII font with each character being 3x6 pixels in size.
+Draw the string _s_ (note: under the hood `(~a s)` is used, so _s_ needn't be a string) at (_x_,_y_). The default font is a fixed-width ASCII font with each character being 3x6 pixels in size.
 
 (**line** _x1 y1 x2 y2_)
 
@@ -219,7 +219,7 @@ All audio is played by composing 8-bit PCM WAV data.
 
 All sounds are made using the `waveform` function. The _curve_ argument is a function that is given a single value in the range of [0.0, 1.0] and should return a frequency to play at that time; 0.0 is the beginning of the waveform and 1.0 is the end. The _seconds_ parameter defines the length of the waveform.
 
-The _instrument_ is the wave function to use and defaults to a simple sine wave. Other - built in - wave functions include `sawtooth-wave`, `square-wave`, `triangle-wave`, and `noise-wave`. But the user can define their own function and use it as well. The range of the parameter send to the _instrument_ function should be assumed [0.0, 2pi] and the return value should range from -1.0 to 1.0.
+The _instrument_ is the wave function to use and defaults to a simple sine wave. Other - built in - wave functions include `sawtooth-wave`, `square-wave`, `triangle-wave`, and `noise-wave`. But the user can define their own function and use it as well. The range of the parameter send to the _instrument_ function should be assumed [0.0, 2π] and the return value should range from -1.0 to 1.0.
 
 The _envelope_ is an amplitude multiplier. It is a function which - like _curve_ - is given a single value in the range [0.0, 1.0] indicating where in the sound it is. It should return a value in the range [0.0, 1.0], where 0.0 indicates a null amplitude and 1.0 indicates full amplitude. The default is to simply play the entire sound at full amplitude. Other, built-in envelopes include `z-envelope` and `s-envelope`. There is also an `envelope` function that helps with the creation of your own envelopes.
 
