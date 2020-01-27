@@ -190,7 +190,7 @@ Change a color in the palette at index _n_ [0, 15] to the RGB byte values.
 Uses the current color to render a 1-bit sprite composed of _bytes_ to video memory at (_x_,_y_). For example:
 
 ```racket
-(draw 10 12 '(#b010 #b111 #b010))
+(draw 10 12 '(#b01000000 #b11100000 #b01000000))
 ```
 
 The above would draw a 3x3 sprite that looks like + sign to the pixels at (10,12) -> (12,14). Any bit set will set the pixel in video memory to the current color. A clear bit is considered to be transparent and will not alter video memory.
