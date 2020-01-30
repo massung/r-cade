@@ -275,11 +275,11 @@
 
 ;; ----------------------------------------------------
 
-(define song (make-tune ".--E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-.E4---C---D---B3---C4---A3---Ab---B-E4---C---D---B3--C4--E-A4--Ab---.E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-"
-                        #:bpm 280
-                        #:instrument triangle-wave))
+(define theme (music ".--E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-.E4---C---D---B3---C4---A3---Ab---B-E4---C---D---B3--C4--E-A4--Ab---.E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-"
+                     #:bpm 280
+                     #:instrument triangle-wave))
 
 (define (play)
   (spawn-tetrinome)
-  (play-music song)
+  (play-music theme)
   (run tetris 48 52 #:scale 6 #:fps 30 #:title "R-cade: Tetris"))

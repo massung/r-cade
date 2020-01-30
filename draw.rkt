@@ -106,7 +106,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (text x y s)
+(define (text x y s #:bg [bg #f])
   (for ([i (range x (width) 4)] [ch (~a s)])
     (let ([n (char->integer ch)])
       (when (<= 33 n 127)

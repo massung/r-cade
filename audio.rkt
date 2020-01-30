@@ -40,14 +40,19 @@ All rights reserved.
          
          ; find the first, stopped voice available
          [avail-channels (dropf channels in-use)])
-    (unless (null? avail-channels)
-      (thunk (first avail-channels)))))
+    (if (null? avail-channels)
+        #f
+        (let ([chan (first avail-channels)])
+          (thunk chan)
+
+          ; return the channel for stop, pause, etc.
+          chan))))
 
 ;; ----------------------------------------------------
 
 (define (play-sound sound #:volume [volume 100.0] #:pitch [pitch 1.0] #:loop [loop #f])
   (with-channel (λ (channel)
-                  (sfSound_setBuffer channel (sound-buffer sound))
+                  (sfSound_setBuffer channel (waveform-buffer sound))
 
                   ; channel settings
                   (sfSound_setVolume channel volume)
@@ -60,15 +65,20 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (stop-sound channel)
-  (void))
+  (sfSound_stop channel))
 
 ;; ----------------------------------------------------
 
-(define make-tune transcribe-notes)
+(define sound? waveform?)
+(define music? tune?)
 
 ;; ----------------------------------------------------
 
-(define music
+(define music transcribe-notes)
+
+;; ----------------------------------------------------
+
+(define music-channel
   (let ([pointer (u8vector->cpointer riff-header)]
         [length (u8vector-length riff-header)])
     (sfMusic_createFromMemory pointer length)))
@@ -79,20 +89,20 @@ All rights reserved.
   (stop-music)
 
   ; set the new, active music tune
-  (set! music (tune-music tune))
+  (set! music-channel (tune-music tune))
   
   ; start playing the new music
-  (sfMusic_setVolume music volume)
-  (sfMusic_setPitch music pitch)
-  (sfMusic_setLoop music loop)
-  (sfMusic_play music))
+  (sfMusic_setVolume music-channel volume)
+  (sfMusic_setPitch music-channel pitch)
+  (sfMusic_setLoop music-channel loop)
+  (sfMusic_play music-channel))
 
 ;; ----------------------------------------------------
 
 (define (pause-music [pause #t])
-  ((if pause sfMusic_pause sfMusic_play) music))
+  ((if pause sfMusic_pause sfMusic_play) music-channel))
 
 ;; ----------------------------------------------------
 
 (define (stop-music)
-  (sfMusic_stop music))
+  (sfMusic_stop music-channel))

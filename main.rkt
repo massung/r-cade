@@ -73,20 +73,26 @@ All rights reserved.
  triangle-wave
  noise-wave
  envelope
+ fade-in-envelope
+ fade-out-envelope
  z-envelope
  s-envelope
+ peak-envelope
+ trough-envelope
 
  ; sound
- waveform
+ sound
+ sound?
  tone
  sweep
- 
+
+ ; music
+ music
+ music?
+
  ; audio
- sound?
- tune?
  play-sound
  stop-sound
- make-tune
  play-music
  stop-music
  pause-music
