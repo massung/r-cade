@@ -15,4 +15,4 @@ If you're interested, head over to the [R-cade][r-cade] website to learn more!
 
 [racket]: https://racket-lang.org/
 [r-cade]: https://r-cade.io/
-[breakout]: https://raw.github.com/massung/r-cade/master/screenshots/breakout.gif
+[breakout]: https://r-cade.io/files/breakout.gif
