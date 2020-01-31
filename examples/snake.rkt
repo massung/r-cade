@@ -17,6 +17,10 @@
 
 ;; ----------------------------------------------------
 
+(define yum (sweep 300 100 0.1 #:instrument square-wave #:envelope z-envelope))
+
+;; ----------------------------------------------------
+
 (define (grow-snake [n 10])
   (set! snake-growth (+ snake-growth n)))
 
@@ -37,6 +41,7 @@
                                 (<= (- snake-y 1) (+ y 1))
                                 (>= (+ snake-y 1) y))
                            (begin
+                             (play-sound yum)
                              (grow-snake)
 
                              ; add points and health
