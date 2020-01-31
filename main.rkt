@@ -40,6 +40,7 @@ All rights reserved.
  wait
  sync
  frame
+ frametime
 
  ; input
  btn-any

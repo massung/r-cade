@@ -32,6 +32,7 @@ All rights reserved.
 
 (define framerate (make-parameter #f))
 (define frame (make-parameter #f))
+(define frameclock (make-parameter #f))
 (define frametime (make-parameter #f))
 
 ;; ----------------------------------------------------
@@ -82,14 +83,15 @@ All rights reserved.
   (flip)
   
   ; wait for the next frame
-  (let* ([next (+ (/ 1000 (framerate)) (frametime))]
-         [delta (- next (current-milliseconds))])
+  (let* ([elapsed (sfClock_getElapsedTime (frameclock))]
+         [delta (- (/ (framerate)) (sfTime_asSeconds elapsed))])
     (unless (< delta 0.0)
-      (sleep (/ delta 1000))))
+      (sleep delta)))
 
-  ; update frame
+  ; update frametime, frame and reset the frame clock
+  (frametime (sfTime_asSeconds (sfClock_getElapsedTime (frameclock))))
   (frame (+ (frame) 1))
-  (frametime (current-milliseconds)))
+  (sfClock_restart (frameclock)))
 
 ;; ----------------------------------------------------
 
@@ -125,8 +127,9 @@ All rights reserved.
          [framerate fps]
          [frame 0]
 
-         ; time of last frame
-         [frametime (current-inexact-milliseconds)])
+         ; delta frame time and framerate clock
+         [frametime 0.0]
+         [frameclock (sfClock_create)])
       (cls)
       (color 7)
 
@@ -141,6 +144,7 @@ All rights reserved.
       (stop-music)
       
       ;; free memory
+      (sfClock_destroy (frameclock))
       (sfSprite_destroy (sprite))
       (sfRenderTexture_destroy (texture))
       (sfRenderWindow_close (window))

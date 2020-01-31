@@ -93,8 +93,8 @@ All rights reserved.
 
 (define (draw x y sprite)
   (for ([byte sprite] [i (range y (height))] #:when (>= i 0))
-    (let ([p (make-sfVector2f (real->single-flonum x)
-                              (real->single-flonum i))]
+    (let ([p (make-sfVector2f (real->single-flonum (round x))
+                              (real->single-flonum (round i)))]
 
           ; bitmask scanline
           [r (vector-ref bitmask-rects (bitwise-and byte #xff))])
