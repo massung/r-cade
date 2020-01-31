@@ -38,6 +38,9 @@
                                 (>= (+ snake-y 1) y))
                            (begin
                              (grow-snake)
+
+                             ; add points and health
+                             (set! snake-score (+ snake-score 1000))
                              (set! snake-health (min (+ snake-health 5) 60))
 
                              ; a new piece of food
@@ -66,7 +69,8 @@
         (set! snake-body (drop-right snake-body 1)))
 
     ; tally points
-    (set! snake-score (+ snake-score 1))
+    (when (zero? (remainder (frame) 10))
+      (set! snake-score (+ snake-score 1)))
 
     ; update the snake's position
     (set! snake-x (+ snake-x dx))
@@ -193,4 +197,4 @@
 ;; ----------------------------------------------------
 
 (define (play)
-  (run (new-game) 128 128 #:fps 60 #:title "Snake"))
+  (run (new-game) 128 128 #:fps 60 #:title "R-cade: Snake"))
