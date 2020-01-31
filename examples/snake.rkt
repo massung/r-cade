@@ -197,4 +197,4 @@
 ;; ----------------------------------------------------
 
 (define (play)
-  (run (new-game) 128 128 #:fps 60 #:title "R-cade: Snake"))
+  (run (new-game) 128 128 #:title "R-cade: Snake"))
