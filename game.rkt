@@ -112,7 +112,7 @@ All rights reserved.
              pixels-high
              #:scale [scale 3]
              #:fps [fps 60]
-             #:shader [fragment crt-fragment-shader]
+             #:shader [effect #t]
              #:title [title "R-cade"])
   (let ([mode (make-sfVideoMode (* pixels-wide scale) (* pixels-high scale) 32)])
 
@@ -125,7 +125,7 @@ All rights reserved.
          [sprite (sfSprite_create)]
 
          ; create a fragment shader for fullscreen rendering
-         [shader (and fragment (sfShader_createFromMemory #f #f fragment))]
+         [shader (and effect (sfShader_createFromMemory #f #f crt-fragment-shader))]
 
          ; default render state
          [render-state (make-sfRenderStates sfBlendAlpha
