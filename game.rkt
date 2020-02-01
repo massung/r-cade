@@ -15,6 +15,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (require "video.rkt")
+(require "shader.rkt")
 (require "input.rkt")
 (require "draw.rkt")
 (require "audio.rkt")
@@ -101,20 +102,35 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (run game-loop w h #:scale [scale 3] #:fps [fps 60] #:title [title "R-cade"])
-  (let ([mode (make-sfVideoMode (* w scale) (* h scale) 32)])
+(define (run game-loop
+             pixels-wide
+             pixels-high
+             #:scale [scale 3]
+             #:fps [fps 60]
+             #:shader [fragment crt-fragment-shader]
+             #:title [title "R-cade"])
+  (let ([mode (make-sfVideoMode (* pixels-wide scale) (* pixels-high scale) 32)])
 
     ; initialize global state
     (parameterize
         ([window (sfRenderWindow_create mode title '(sfDefaultStyle) #f)]
 
          ; video memory
-         [texture (sfRenderTexture_create w h #f)]
+         [texture (sfRenderTexture_create pixels-wide pixels-high #f)]
          [sprite (sfSprite_create)]
 
+         ; create a fragment shader for fullscreen rendering
+         [shader (and fragment (sfShader_createFromMemory #f #f fragment))]
+
+         ; default render state
+         [render-state (make-sfRenderStates sfBlendAlpha
+                                            sfTransform_Identity
+                                            #f
+                                            #f)]
+
          ; playfield size
-         [width w]
-         [height h]
+         [width pixels-wide]
+         [height pixels-high]
 
          ; input buttons
          [buttons (make-hash)]
@@ -133,6 +149,12 @@ All rights reserved.
       (cls)
       (color 7)
 
+      ; set shader uniforms
+      (when (shader)
+        (let ([size (make-sfGlslVec2 (exact->inexact (width))
+                                     (exact->inexact (height)))])
+          (sfShader_setVec2Uniform (shader) "textureSize" size)))
+
       ; main game loop
       (do () [(not (sfRenderWindow_isOpen (window)))]
         (sync)
@@ -144,6 +166,8 @@ All rights reserved.
       (stop-music)
       
       ;; free memory
+      (when (shader)
+        (sfShader_destroy (shader)))
       (sfClock_destroy (frameclock))
       (sfSprite_destroy (sprite))
       (sfRenderTexture_destroy (texture))

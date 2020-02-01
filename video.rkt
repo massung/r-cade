@@ -13,6 +13,10 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(require "shader.rkt")
+
+;; ----------------------------------------------------
+
 (provide (all-defined-out))
 
 ;; ----------------------------------------------------
@@ -22,6 +26,8 @@ All rights reserved.
 (define sprite (make-parameter #f))
 (define width (make-parameter #f))
 (define height (make-parameter #f))
+(define shader (make-parameter #f))
+(define render-state (make-parameter #f))
 
 ;; ----------------------------------------------------
 
@@ -74,7 +80,10 @@ All rights reserved.
     (sfSprite_setScale (sprite) (make-sfVector2f scale scale))
     (sfSprite_setPosition (sprite) (sfRenderWindow_mapPixelToCoords (window) center #f)))
 
+  ; use the crt shader
+  (set-sfRenderStates-shader! (render-state) (shader))
+  
   ; redraw the window
   (sfRenderWindow_clear (window) bg)
-  (sfRenderWindow_drawSprite (window) (sprite) #f)
+  (sfRenderWindow_drawSprite (window) (sprite) (render-state))
   (sfRenderWindow_display (window)))
