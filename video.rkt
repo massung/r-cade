@@ -48,7 +48,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (flip)
+(define (flip frame time)
   (sfRenderTexture_display (texture))
 
   ; update the sprite
@@ -82,6 +82,10 @@ All rights reserved.
 
   ; use the crt shader
   (set-sfRenderStates-shader! (render-state) (shader))
+
+  ; update shader parameters
+  (sfShader_setIntUniform (shader) "frame" frame)
+  (sfShader_setFloatUniform (shader) "time" time)
   
   ; redraw the window
   (sfRenderWindow_clear (window) bg)

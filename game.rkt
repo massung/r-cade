@@ -34,7 +34,11 @@ All rights reserved.
 (define framerate (make-parameter #f))
 (define frame (make-parameter #f))
 (define frameclock (make-parameter #f))
+
+;; ----------------------------------------------------
+
 (define frametime (make-parameter #f))
+(define gametime (make-parameter #f))
 
 ;; ----------------------------------------------------
 
@@ -81,7 +85,7 @@ All rights reserved.
 
 (define (sync)
   (process-events)
-  (flip)
+  (flip (frame) (gametime))
   
   ; wait for the next frame
   (let* ([elapsed (sfClock_getElapsedTime (frameclock))]
@@ -89,8 +93,9 @@ All rights reserved.
     (unless (< delta 0.0)
       (sleep delta)))
 
-  ; update frametime, frame and reset the frame clock
+  ; update frametime, gametime, frame, and reset the frame clock
   (frametime (sfTime_asSeconds (sfClock_getElapsedTime (frameclock))))
+  (gametime (+ (gametime) (frametime)))
   (frame (+ (frame) 1))
   (sfClock_restart (frameclock)))
 
@@ -143,8 +148,9 @@ All rights reserved.
          [framerate fps]
          [frame 0]
 
-         ; delta frame time and framerate clock
+         ; delta frame time, total game time, and framerate clock
          [frametime 0.0]
+         [gametime 0.0]
          [frameclock (sfClock_create)])
       (cls)
       (color 7)

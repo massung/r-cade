@@ -28,11 +28,6 @@ All rights reserved.
 
 (provide
 
- ; video
- width
- height
- flip
-
  ; game
  define-action
  run
@@ -41,6 +36,9 @@ All rights reserved.
  sync
  frame
  frametime
+ gametime
+ width
+ height
 
  ; input
  btn-any
