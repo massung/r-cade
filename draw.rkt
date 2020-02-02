@@ -80,8 +80,8 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (cls)
-  (sfRenderTexture_clear (texture) (vector-ref palette 0)))
+(define (cls [c 0])
+  (sfRenderTexture_clear (texture) (vector-ref palette (bitwise-and c #xf))))
 
 ;; ----------------------------------------------------
 

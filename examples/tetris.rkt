@@ -74,14 +74,12 @@
 (define (level)
   (quotient lines 10))
 
-;; ----------------------------------------------------
-
-(define (drop-frame-rate)
-  (max (- 30 (* (level) 3)) 0))
+(define (drop-rate)
+  (max (- 1.0 (* (level) 0.08)) 0.1))
 
 ;; ----------------------------------------------------
 
-(define drop-frame 60)
+(define drop-timer 0.0)
 
 ;; ----------------------------------------------------
 
@@ -244,7 +242,8 @@
         (draw-game)
   
         ; descend?
-        (when (or (move-down) (> (frame) drop-frame))
+        (set! drop-timer (+ drop-timer (frametime)))
+        (when (or (move-down) (> drop-timer (drop-rate)))
           (if (test-shape piece-x (+ piece-y 1) piece angle)
               (begin
                 (place-tetrinome)
@@ -253,7 +252,7 @@
               (set! piece-y (+ piece-y 1)))
 
           ; reset the drop timer
-          (set! drop-frame (+ (frame) (drop-frame-rate))))
+          (set! drop-timer 0.0))
 
         ; rotate the piece
         (when (spin-block)

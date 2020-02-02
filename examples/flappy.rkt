@@ -187,8 +187,7 @@
   (setup)
   
   (λ ()
-    (color 12)
-    (rect 0 0 (width) (height) #:fill #t)
+    (cls 12)
 
     ; player
     (unless game-over

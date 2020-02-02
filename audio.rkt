@@ -70,6 +70,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define sound? waveform?)
+(define channel? sfSound*?)
 (define music? tune?)
 
 ;; ----------------------------------------------------

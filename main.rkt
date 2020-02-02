@@ -90,6 +90,7 @@ All rights reserved.
  music?
 
  ; audio
+ channel?
  play-sound
  stop-sound
  play-music
