@@ -212,7 +212,8 @@
 
     ; restart?
     (when (btn-start)
-      (setup))
+      (when game-over
+        (setup)))
 
     ; quit?
     (when (btn-quit)

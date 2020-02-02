@@ -174,8 +174,8 @@
         (text 47 58 snake-score)
 
         ; allow restarting the game
-        (when (btn-start)
-          (setup)))
+        (wait btn-start)
+        (setup))
       #f))
 
 ;; ----------------------------------------------------
