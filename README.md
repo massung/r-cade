@@ -10,9 +10,10 @@ If you're interested, head over to the [R-cade][r-cade] website to learn more!
 
 ---
 
-![Breakout!][breakout]
+![Breakout!][breakout] ![Flappy][flappy]
 
 
 [racket]: https://racket-lang.org/
 [r-cade]: https://r-cade.io/
 [breakout]: https://r-cade.io/files/breakout.gif
+[flappy]: https://r-cade.io/files/flappy.gif
