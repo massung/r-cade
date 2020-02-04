@@ -105,36 +105,42 @@
         (let* ([i (+ (* y 10) x)]
 
                ; block bounds
-               [bx1 (- (+ (* x 10) x-offset) 1)]
-               [bx2 (+ bx1 9)]
-               [by1 (- (+ (* y 3) y-offset) 1)]
-               [by2 (+ by1 3)])
+               [bx1 (+ (* x 10) x-offset)]
+               [bx2 (+ bx1 7)]
+               [by1 (+ (* y 3) y-offset)]
+               [by2 (+ by1 1)])
 
           ; is this block still alive?
           (when (vector-ref blocks i)
             (color (+ 8 y))
             (draw bx1 by1 '(#xff #xff))
 
-            ; nearest point on block to the center of ball
-            (let* ([near-x (max bx1 (min cx bx2))]
-                   [near-y (max by1 (min cy by2))]
+            ; Pretend the ball is a circle with a slightly larger radius
+            ; than 1 pixel to determine collision.
 
-                   ; distance to center of ball
-                   [dist-x (* (- near-x cx) (- near-x cx))]
-                   [dist-y (* (- near-y cy) (- near-y cy))])
+            (let* ([cx (+ ball-x dx 0.5)]
+                   [cy (+ ball-y dy 0.5)]
 
-              ; did the ball collide?
-              (when (< (+ dist-x dist-y) 1.0)
+                   ; find the nearest point on the block to the ball
+                   [nx (max bx1 (min cx bx2))]
+                   [ny (max by1 (min cy by2))]
+
+                   ; calculate distance from the block to the ball
+                   [dist-x (* (- nx cx) (- nx cx))]
+                   [dist-y (* (- ny cy) (- ny cy))])
+
+              ; is the distance within the radius of the ball?
+              (when (< (+ dist-x dist-y) 2.25)  ; 1.5 ^ 2
+                (if (< dist-y (/ dist-x 2))
+                    (set! ddx (- dx))
+                    (set! ddy (- dy)))
+
+                ; clear the block
                 (vector-set! blocks i #f)
 
                 ; increment combo counter and tally score
                 (set! score (+ score (* combo 10)))
                 (set! combo (min (+ combo 1) 8))
-
-                ; bounce up/down or left/right?
-                (if (< dist-y dist-x)
-                    (set! ddx (- dx))
-                    (set! ddy (- dy)))
 
                 ; play the boop sound
                 (play-sound boop)))))))))
@@ -207,8 +213,8 @@
         (set! ddy (- dy))
         (set! combo 1)
         (cond
-          ([<= 0 x 5] (set! ddx (- dx (random))))
-          ([<= 10 x 15] (set! ddx (+ dx (random))))))))
+          ([<= 0 x 5] (set! ddx (max (- dx (random)) -2.0)))
+          ([<= 10 x 15] (set! ddx (min (+ dx (random)) 2.0)))))))
 
   ; change ball direction?
   (set! dx ddx)

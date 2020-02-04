@@ -9,6 +9,12 @@
 
 ;; ----------------------------------------------------
 
+(define cloud-sprites #((#x0c #x3e #x7e #xff #x7e)
+                        (#x18 #x7c #xfe #xff #x7e)
+                        (#x30 #x7c #xff #xff #x7e)))
+
+;; ----------------------------------------------------
+
 (define flap-sound (sweep 100 200 0.1 #:instrument square-wave #:envelope z-envelope))
 (define die-sound (sweep 200 100 0.4  #:instrument sawtooth-wave #:envelope z-envelope))
 
@@ -35,10 +41,12 @@
 ;; ----------------------------------------------------
 
 (struct pipe [(x #:mutable) top gap])
+(struct cloud [(x #:mutable) dx y sprite])
 
 ;; ----------------------------------------------------
 
 (define pipes null)
+(define clouds null)
 
 ;; ----------------------------------------------------
 
@@ -47,12 +55,31 @@
 ;; ----------------------------------------------------
 
 (define (spawn-pipe)
-  (when (zero? (remainder pipe-spawn-counter 54))
+  (when (zero? (remainder pipe-spawn-counter 50))
     (let* ([x   (+ (width) 8)]
-           [gap (+ (random 32) 32)]
-           [top (+ (random (- 90 gap)) 20)])
+           [gap (+ (random 16) 32)]
+           [top (+ (random 36) 17)])
       (set! pipes (cons (pipe x top gap) pipes))))
   (set! pipe-spawn-counter (+ pipe-spawn-counter 1)))
+
+;; ----------------------------------------------------
+
+(define (make-cloud)
+  (let ([x (+ 128 (random 128))]
+        [y (random (- 128 30))]
+        [back (< (random) 0.5)]
+        [sprite (random (vector-length cloud-sprites))])
+    (cloud x 2 y (vector-ref cloud-sprites sprite))))
+
+;; ----------------------------------------------------
+
+(define (move-clouds)
+  (set! clouds (for/list ([cloud clouds])
+                 (set-cloud-x! cloud (- (cloud-x cloud) (cloud-dx cloud)))
+
+                 (if (> (cloud-x cloud) -10)
+                     cloud
+                     (make-cloud)))))
 
 ;; ----------------------------------------------------
 
@@ -160,6 +187,13 @@
 
 ;; ----------------------------------------------------
 
+(define (draw-clouds)
+  (color 7)
+  (for ([cloud clouds])
+    (draw (cloud-x cloud) (cloud-y cloud) (cloud-sprite cloud))))
+
+;; ----------------------------------------------------
+
 (define (draw-score)
   (let ([s (cond
               [game-over "Game Over! START to Try Again"]
@@ -179,7 +213,8 @@
   (set! player-vel 0)
   (set! gravity 0)
   (set! score 0)
-  (set! pipes null))
+  (set! pipes null)
+  (set! clouds (for/list ([_ (range 4)]) (make-cloud))))
 
 ;; ----------------------------------------------------
 
@@ -201,19 +236,22 @@
         (spawn-pipe)
         (move-pipes)))
 
+    ; clouds
+    (move-clouds)
+
     ; world
     (draw-player)
     (draw-ground)
     (draw-pipes)
+    (draw-clouds)
     (draw-score)
 
     ; check for game over
     (dead?)
 
     ; restart?
-    (when (btn-start)
-      (when game-over
-        (setup)))
+    (when (and game-over (btn-start))
+      (setup))
 
     ; quit?
     (when (btn-quit)
