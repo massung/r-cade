@@ -84,8 +84,9 @@ All rights reserved.
   (set-sfRenderStates-shader! (render-state) (shader))
 
   ; update shader parameters
-  (sfShader_setIntUniform (shader) "frame" frame)
-  (sfShader_setFloatUniform (shader) "time" time)
+  (when (shader)
+    (sfShader_setIntUniform (shader) "frame" frame)
+    (sfShader_setFloatUniform (shader) "time" time))
   
   ; redraw the window
   (sfRenderWindow_clear (window) bg)
