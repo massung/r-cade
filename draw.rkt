@@ -143,8 +143,8 @@ All rights reserved.
 
 (define (circle x y r #:fill [fill #f])
   (let ([c (sfSprite_getColor bitmask-sprite)]
-        [p (make-sfVector2f (real->single-flonum x)
-                            (real->single-flonum y))])
+        [p (make-sfVector2f (real->single-flonum (- x r))
+                            (real->single-flonum (- y r)))])
     (sfCircleShape_setRadius circle-shape (real->single-flonum r))
     (sfCircleShape_setPosition circle-shape p)
     (sfCircleShape_setOutlineColor circle-shape c)
