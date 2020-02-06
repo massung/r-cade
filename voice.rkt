@@ -20,9 +20,8 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (fmod x d)
-  (let* ([n (* d (truncate (/ x d)))]
-         [m (- x n)])
-    (if (< m pi) m (- m d))))
+  (let* ([n (* d (truncate (/ x d)))])
+    (- x n)))
 
 ;; ----------------------------------------------------
 
@@ -48,8 +47,26 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define white-noise (for/vector ([_ (range 50)])
+                      (- (random) (random))))
+
+;; ----------------------------------------------------
+
 (define (noise-wave x)
-  (square-wave (random)))
+  (let* ([l (vector-length white-noise)]
+         [f (abs (* (/ (fmod x (* pi 2.0)) (* pi 2.0)) (- l 1)))]
+
+         ; prev value and next value
+         [n (inexact->exact (floor f))]
+         [m (remainder (+ n 1) l)]
+
+         ; % from n -> m
+         [t (- f n)]
+
+         ; noise values
+         [v0 (vector-ref white-noise n)]
+         [v1 (vector-ref white-noise m)])
+    (+ v0 (* (- v1 v0) t))))
 
 ;; ----------------------------------------------------
 

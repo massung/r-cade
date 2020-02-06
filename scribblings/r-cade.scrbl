@@ -22,6 +22,7 @@ All the most recent updates, blog posts, etc. can be found at @url{http://r-cade
 @defproc[(run [game-loop procedure?]
               [width exact-nonnegative-integer?]
               [height exact-nonnegative-integer?]
+              [#:init init procedure? #f]
               [#:scale scale-factor exact-nonnegative-integer? #f]
               [#:fps frame-rate exact-nonnegative-integer? 60]
               [#:shader crt-effect boolean? #t]
@@ -32,6 +33,8 @@ Creates a new game window, video memory, and enters the main game loop.
 The @racket[game-loop] parameter is a function you provide, which will be called once per frame and should take no arguments.
 
 The @racket[width] and @racket[height] parameters define the size of video memory (not the size of the window!).
+
+The @racket[init] procedure - if provided - is called before the @racket[game-loop] starts.
 
 The @racket[scale-factor] parameter will determine the initial size of the window. The default will let auto pick a scale factor that is appropriate given the size of the display.
 

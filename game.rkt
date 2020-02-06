@@ -110,6 +110,7 @@ All rights reserved.
 (define (run game-loop
              pixels-wide
              pixels-high
+             #:init [init #f]
              #:scale [scale 3]
              #:fps [fps 60]
              #:shader [effect #t]
@@ -155,6 +156,10 @@ All rights reserved.
       (cls)
       (color 7)
 
+      ; optionally allow for an init function
+      (when init
+        (init))
+
       ; set shader uniforms
       (when (shader)
         (let ([size (make-sfGlslVec2 (exact->inexact (width))
@@ -163,9 +168,8 @@ All rights reserved.
 
       ; main game loop
       (do () [(not (sfRenderWindow_isOpen (window)))]
-        (sync)
-        
         (with-handlers ([exn? (λ (e) (displayln e))])
+          (sync)
           (game-loop)))
 
       ; stop playing any music
