@@ -123,7 +123,6 @@ All @tt{btn-*} functions return @racket[#f] if their respective button is not pr
 
 @;; ----------------------------------------------------
 @defproc[(btn-mouse) (or #f exact-nonnegative-integer?)]{Returns the state of the LEFT mouse button.}
- X key.}
 
 
 @;; ----------------------------------------------------
