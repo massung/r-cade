@@ -62,25 +62,28 @@ All rights reserved.
   (do ([event (sfRenderWindow_pollEvent (window))
               (sfRenderWindow_pollEvent (window))])
     ((not event))
-    (case (sfEvent-type event)
-      ; window events
-      ('sfEvtClosed (sfRenderWindow_close (window)))
-      ('sfEvtResized (resize (sfEvent-size event)))
-      
-      ; key events
-      ('sfEvtKeyPressed
-       (on-key-pressed (sfEvent-key event)))
-      ('sfEvtKeyReleased
-       (on-key-released (sfEvent-key event)))
-      
-      ; mouse events
-      ('sfEvtMouseMoved
-       (on-mouse-moved (sfEvent-mouseMove event)))
-      ('sfEvtMouseButtonPressed
-       (on-mouse-clicked (sfEvent-mouseButton event)))
-      ('sfEvtMouseButtonReleased
-       (on-mouse-released (sfEvent-mouseButton event))))))
 
+    ; every once in a while SFML returns an invalid event
+    (with-handlers ([exn:fail? (const (void))])
+      (case (sfEvent-type event)
+        ; window events
+        ('sfEvtClosed (sfRenderWindow_close (window)))
+        ('sfEvtResized (resize (sfEvent-size event)))
+        
+        ; key events
+        ('sfEvtKeyPressed
+         (on-key-pressed (sfEvent-key event)))
+        ('sfEvtKeyReleased
+         (on-key-released (sfEvent-key event)))
+        
+        ; mouse events
+        ('sfEvtMouseMoved
+         (on-mouse-moved (sfEvent-mouseMove event)))
+        ('sfEvtMouseButtonPressed
+         (on-mouse-clicked (sfEvent-mouseButton event)))
+        ('sfEvtMouseButtonReleased
+         (on-mouse-released (sfEvent-mouseButton event)))))))
+  
 ;; ----------------------------------------------------
 
 (define (sync)
