@@ -29,9 +29,7 @@ for their hard work!!
 |#
 
 (define crt-fragment-shader
-  (string-append "uniform int frame;"
-                 "uniform float time;"
-                 "uniform sampler2D texture;"
+  (string-append "uniform sampler2D texture;"
                  "uniform vec2 textureSize;"
                  ""
                  "vec3 to_focus(float p)"

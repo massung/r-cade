@@ -80,13 +80,8 @@ All rights reserved.
     (sfSprite_setScale (sprite) (make-sfVector2f scale scale))
     (sfSprite_setPosition (sprite) (sfRenderWindow_mapPixelToCoords (window) center #f)))
 
-  ; use the crt shader
+  ; use the crt shader (may be null)
   (set-sfRenderStates-shader! (render-state) (shader))
-
-  ; update shader parameters
-  (when (shader)
-    (sfShader_setIntUniform (shader) "frame" frame)
-    (sfShader_setFloatUniform (shader) "time" time))
   
   ; redraw the window
   (sfRenderWindow_clear (window) bg)
