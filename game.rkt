@@ -10,6 +10,7 @@ All rights reserved.
 |#
 
 (require csfml)
+(require ffi/unsafe/custodian)
 (require racket/match)
 
 ;; ----------------------------------------------------
@@ -156,12 +157,17 @@ All rights reserved.
          [frametime 0.0]
          [gametime 0.0]
          [frameclock (sfClock_create)])
-      (cls)
-      (color 7)
+
+      ; attempt to close the windw on shutdown (or re-run)
+      (register-custodian-shutdown (window) sfRenderWindow_close #:at-exit? #t)
 
       ; optionally allow for an init function
       (when init
         (init))
+
+      ; defaults
+      (cls)
+      (color 7)
 
       ; set shader uniforms
       (when (shader)
@@ -171,7 +177,9 @@ All rights reserved.
 
       ; main game loop
       (do () [(not (sfRenderWindow_isOpen (window)))]
-        (with-handlers ([exn? (λ (e) (displayln e))])
+        (with-handlers ([exn? (λ (e)
+                                (displayln e)
+                                (quit))])
           (sync)
           (game-loop)))
 
