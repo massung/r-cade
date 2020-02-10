@@ -28,7 +28,8 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (quit)
-  (sfRenderWindow_close (window)))
+  (when (and (window) (sfRenderWindow_isOpen (window)))
+    (sfRenderWindow_close (window))))
 
 ;; ----------------------------------------------------
 
@@ -159,7 +160,11 @@ All rights reserved.
          [frameclock (sfClock_create)])
 
       ; attempt to close the windw on shutdown (or re-run)
-      (register-custodian-shutdown (window) sfRenderWindow_close #:at-exit? #t)
+      (register-custodian-shutdown (window)
+                                   (λ (w)
+                                     (when w
+                                       (sfRenderWindow_close w)))
+                                   #:at-exit? #t)
 
       ; optionally allow for an init function
       (when init

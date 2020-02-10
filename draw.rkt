@@ -132,7 +132,7 @@ All rights reserved.
                             (real->single-flonum h))])
     (sfRectangleShape_setSize rect-shape s)
     (sfRectangleShape_setPosition rect-shape p)
-    (sfRectangleShape_setOutlineColor rect-shape c)
+    (sfRectangleShape_setOutlineColor rect-shape (if fill sfTransparent c))
     (sfRectangleShape_setOutlineThickness rect-shape 1.0)
     (sfRectangleShape_setFillColor rect-shape (if fill c sfTransparent))
 
@@ -147,7 +147,7 @@ All rights reserved.
                             (real->single-flonum (- y r)))])
     (sfCircleShape_setRadius circle-shape (real->single-flonum r))
     (sfCircleShape_setPosition circle-shape p)
-    (sfCircleShape_setOutlineColor circle-shape c)
+    (sfCircleShape_setOutlineColor circle-shape (if fill sfTransparent c))
     (sfCircleShape_setOutlineThickness circle-shape 1.0)
     (sfCircleShape_setFillColor circle-shape (if fill c sfTransparent))
 

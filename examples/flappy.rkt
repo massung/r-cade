@@ -85,26 +85,22 @@
 
 (define (draw-pipes)
   (for ([pipe pipes])
-    (let ([x   (pipe-x pipe)]
-          [top (pipe-top pipe)]
-          [gap (pipe-gap pipe)])
-      (for ([i (range top)])
-        (color 11)
-        (draw x i '(#xff))
-        (color 7)
-        (draw x i '(#x40))
-        (color 3)
-        (draw x i '(#x01)))
-      (for ([i (range (+ top gap) 118)])
-        (color 11)
-        (draw x i '(#xff))
-        (color 7)
-        (draw x i '(#x40))
-        (color 3)
-        (draw x i '(#x01)))
+    (let* ([x   (pipe-x pipe)]
+           [top (pipe-top pipe)]
+           [gap (pipe-gap pipe)]
+           [y (+ top gap)])
+      (color 11)
+      (rect x 0 12 top #:fill #t)
+      (rect x y 12 (- 118 y) #:fill #t)
+      (color 7)
+      (line (+ x 2) 0 (+ x 2) top)
+      (line (+ x 2) y (+ x 2) 118)
+      (color 3)
+      (line (+ x 12) 0 (+ x 12) top)
+      (line (+ x 12) y (+ x 12) 118)
       (color 0)
-      (draw x top '(#xff))
-      (draw x (+ top gap) '(#xff)))))
+      (line x top (+ x 12) top)
+      (line x y (+ x 12) y))))
 
 ;; ----------------------------------------------------
 
@@ -160,7 +156,7 @@
                             (let ([x   (pipe-x pipe)]
                                   [top (pipe-top pipe)]
                                   [gap (pipe-gap pipe)])
-                              (and (< (- x 8) player-x (+ x 8))
+                              (and (< (- x 12) player-x (+ x 12))
                                    (or (< player-y top)
                                        (< (+ top gap) (+ player-y 6))))))))
 
