@@ -109,11 +109,11 @@
     (set-pipe-x! pipe (- (pipe-x pipe) 1))
 
     ; increase if the player got through a pipe
-    (when (= player-x (+ (pipe-x pipe) 8))
+    (when (= player-x (+ (pipe-x pipe) 12))
       (set! score (+ score 1)))
   
   ; get rid of any pipes off screen
-  (set! pipes (filter (λ (p) (> (pipe-x p) -8)) pipes))))
+  (set! pipes (filter (λ (p) (> (pipe-x p) -12)) pipes))))
 
 ;; ----------------------------------------------------
 
@@ -156,9 +156,9 @@
                             (let ([x   (pipe-x pipe)]
                                   [top (pipe-top pipe)]
                                   [gap (pipe-gap pipe)])
-                              (and (< (- x 12) player-x (+ x 12))
+                              (and (< (- x 10) player-x (+ x 12))
                                    (or (< player-y top)
-                                       (< (+ top gap) (+ player-y 6))))))))
+                                       (< (+ top gap) (+ player-y 7))))))))
 
       ; play death sound if game over
       (when game-over
