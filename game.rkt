@@ -160,33 +160,36 @@ All rights reserved.
          [frameclock (sfClock_create)])
 
       ; attempt to close the windw on shutdown (or re-run)
-      (register-custodian-shutdown (window)
-                                   (λ (w)
-                                     (when w
-                                       (sfRenderWindow_close w)))
-                                   #:at-exit? #t)
+      (let ([v (register-custodian-shutdown (window)
+                                            (λ (w)
+                                              (when w
+                                                (sfRenderWindow_close w)))
+                                            #:at-exit? #t)])
+               
+        ; optionally allow for an init function
+        (when init
+          (init))
+        
+        ; defaults
+        (cls)
+        (color 7)
+        
+        ; set shader uniforms
+        (when (shader)
+          (let ([size (make-sfGlslVec2 (exact->inexact (width))
+                                       (exact->inexact (height)))])
+            (sfShader_setVec2Uniform (shader) "textureSize" size)))
+        
+        ; main game loop
+        (do () [(not (sfRenderWindow_isOpen (window)))]
+          (with-handlers ([exn? (λ (e)
+                                  (displayln e)
+                                  (quit))])
+            (sync)
+            (game-loop)))
 
-      ; optionally allow for an init function
-      (when init
-        (init))
-
-      ; defaults
-      (cls)
-      (color 7)
-
-      ; set shader uniforms
-      (when (shader)
-        (let ([size (make-sfGlslVec2 (exact->inexact (width))
-                                     (exact->inexact (height)))])
-          (sfShader_setVec2Uniform (shader) "textureSize" size)))
-
-      ; main game loop
-      (do () [(not (sfRenderWindow_isOpen (window)))]
-        (with-handlers ([exn? (λ (e)
-                                (displayln e)
-                                (quit))])
-          (sync)
-          (game-loop)))
+        ; clean-up shutdown registration
+        (unregister-custodian-shutdown (window) v))
 
       ; stop playing any music
       (stop-music)
