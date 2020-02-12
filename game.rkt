@@ -112,14 +112,32 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define (discover-good-scale w h)
+  (let* ([mode (sfVideoMode_getDesktopMode)]
+
+         ; size of the display the window will be on
+         [screen-w (sfVideoMode-width mode)]
+         [screen-h (sfVideoMode-height mode)]
+
+         ; scale to fit ~60% of the screen
+         [scale-x (quotient (* screen-w 0.6) w)]
+         [scale-y (quotient (* screen-h 0.6) h)])
+    (inexact->exact (max (min scale-x scale-y) 1))))
+
+;; ----------------------------------------------------
+
 (define (run game-loop
              pixels-wide
              pixels-high
              #:init [init #f]
-             #:scale [scale 3]
+             #:scale [scale #f]
              #:fps [fps 60]
              #:shader [effect #t]
              #:title [title "R-cade"])
+  (unless scale
+    (set! scale (discover-good-scale pixels-wide pixels-high)))
+
+  ; set the video mode for the window
   (let ([mode (make-sfVideoMode (* pixels-wide scale) (* pixels-high scale) 32)])
 
     ; initialize global state
