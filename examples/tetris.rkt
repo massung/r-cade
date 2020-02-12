@@ -281,4 +281,4 @@
 (define (play)
   (spawn-tetrinome)
   (play-music theme)
-  (run tetris 48 52 #:scale 6 #:fps 30 #:title "R-cade: Tetris"))
+  (run tetris 48 52 #:fps 30 #:title "R-cade: Tetris"))
