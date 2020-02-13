@@ -8,7 +8,7 @@
 (define city-sprite '(#x20 #x68 #xed #xff #xff))
 (define destroyed-sprite '(#x00 #x00 #x00 #x91 #xd3))
 (define silo-sprite '(#x40 #x40 #x40 #xe0 #xa0))
-(define redicule-sprite '(#x20 #x20 #xf8 #x20 #x20))
+(define redicule-sprite '(#x20 #x20 #xd8 #x20 #x20))
 (define target-sprite '(#x88 #x50 #x20 #x50 #x88))
 
 ;; ----------------------------------------------------
@@ -398,46 +398,49 @@
 
 ;; ----------------------------------------------------
 
-(define (new-game)
-  (setup)
+(define (game-loop)
+  (cls)
+  
+  ; new wave?
+  (when (and (null? enemy-missiles)
+             (null? enemy-explosions)
+             (null? player-missiles)
+             (null? player-explosions))
+    (if (zero? (cities-left))
+        (game-over)
+        (next-wave)))
 
-  (λ ()
-    (cls)
+  ; world
+  (draw-ground)
+  (draw-cities)
+  (draw-silos)
+  (draw-missiles)
+  (draw-explosions)
+  (draw-score)
 
-    ; new wave?
-    (when (and (null? enemy-missiles)
-               (null? enemy-explosions)
-               (null? player-missiles)
-               (null? player-explosions))
-      (if (zero? (cities-left))
-          (game-over)
-          (next-wave)))
-
-    ; world
-    (draw-ground)
-    (draw-cities)
-    (draw-silos)
-    (draw-missiles)
-    (draw-explosions)
-    (draw-score)
-
-    ; player
-    (color 7)
-    (draw (- (mouse-x) 2) (- (mouse-y) 2) redicule-sprite)
+  ; player
+  (color 7)
+  (draw (- (mouse-x) 2) (- (mouse-y) 2) redicule-sprite)
     
-    ; update
-    (advance-missiles)
-    (advance-explosions)
+  ; update
+  (advance-missiles)
+  (advance-explosions)
 
-    ; controls
-    (when (and (launch-btn) (not (null? enemy-missiles)))
-      (launch-player-missile))
+  ; controls
+  (when (and (launch-btn) (not (null? enemy-missiles)))
+    (launch-player-missile))
 
-    ; quit game?
-    (when (btn-quit)
-      (quit))))
+  ; quit game?
+  (when (btn-quit)
+    (quit)))
+
+;; ----------------------------------------------------
+
+(define (new-game)
+  (hide-mouse)
+  (setup))
 
 ;; ----------------------------------------------------
 
 (define (play)
-  (run (new-game) 160 128 #:title "R-cade: Defender"))
+  (run game-loop 160 128 #:init new-game #:title "R-cade: Defender"))

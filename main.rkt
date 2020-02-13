@@ -54,6 +54,8 @@ All rights reserved.
  btn-mouse
  mouse-x
  mouse-y
+ hide-mouse
+ show-mouse
 
  ; draw
  cls

@@ -60,7 +60,7 @@ All rights reserved.
       (btn-select)
       (btn-quit)
       (btn-z)
-      (btn-x)))
+      (btn-x)))  
 
 ;; ----------------------------------------------------
 

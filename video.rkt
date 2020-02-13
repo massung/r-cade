@@ -10,6 +10,7 @@ All rights reserved.
 |#
 
 (require csfml)
+(require racket/match)
 
 ;; ----------------------------------------------------
 
@@ -32,6 +33,16 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define bg (sfColor_fromRGBA #x10 #x10 #x18 #xff))
+
+;; ----------------------------------------------------
+
+(define (hide-mouse)
+  (sfRenderWindow_setMouseCursorVisible (window) #f))
+
+;; ----------------------------------------------------
+
+(define (show-mouse)
+  (sfRenderWindow_setMouseCursorVisible (window) #t))
 
 ;; ----------------------------------------------------
 
@@ -86,4 +97,5 @@ All rights reserved.
   ; redraw the window
   (sfRenderWindow_clear (window) bg)
   (sfRenderWindow_drawSprite (window) (sprite) (render-state))
+  
   (sfRenderWindow_display (window)))

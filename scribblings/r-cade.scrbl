@@ -34,7 +34,7 @@ The @racket[game-loop] parameter is a function you provide, which will be called
 
 The @racket[width] and @racket[height] parameters define the size of video memory (not the size of the window!).
 
-The @racket[init] procedure - if provided - is called before the @racket[game-loop] starts.
+The @racket[init] procedure - if provided - is called before the @racket[game-loop] starts. If you have initialization or setup code that requires R-cade state be initialized, this is where you can safely do it.
 
 The @racket[scale-factor] parameter will determine the initial size of the window. The default will let auto pick a scale factor that is appropriate given the size of the display.
 
@@ -142,6 +142,14 @@ This function isn't really used much outside of @racket[wait].
 
 @;; ----------------------------------------------------
 @defproc[(mouse-y) exact-nonnegative-integer?]{Returns the Y pixel (in VRAM) that the mouse is over. @tt{0} is the top edge.}
+
+
+@;; ----------------------------------------------------
+@defproc[(hide-mouse) void?]{Hides the mouse cursor while over the window.}
+
+
+@;; ----------------------------------------------------
+@defproc[(show-mouse) void?]{Shows the mouse cursor while over the window.}
 
 
 @;; ----------------------------------------------------

@@ -183,7 +183,7 @@ All rights reserved.
                                               (when w
                                                 (sfRenderWindow_close w)))
                                             #:at-exit? #t)])
-               
+        
         ; optionally allow for an init function
         (when init
           (init))

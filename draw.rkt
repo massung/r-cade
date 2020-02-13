@@ -15,6 +15,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(require "input.rkt")
 (require "video.rkt")
 (require "palette.rkt")
 (require "font.rkt")
