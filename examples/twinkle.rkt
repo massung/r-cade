@@ -4,7 +4,7 @@
 
 ;; ----------------------------------------------------
 
-(define song (music "CCGGAAG-FFEEDDC-GGFFEED-GGFFEED-CCGGAAG-FFEEDDC-." #:bpm 120))
+(define song (music "CCGGAAG-FFEEDDC-GGFFEED-GGFFEED-CCGGAAG-FFEEDDC-." #:tempo 120))
 
 ;; ----------------------------------------------------
 

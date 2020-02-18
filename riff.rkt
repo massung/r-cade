@@ -17,10 +17,6 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define sample-rate (make-parameter 11025))
-
-;; ----------------------------------------------------
-
 (define riff-header
   (u8vector #x52 #x49 #x46 #x46    ; "RIFF"
             #x24 #x00 #x00 #x00    ; size of WAVE = size of RIFF - 8
@@ -29,8 +25,8 @@ All rights reserved.
             #x10 #x00 #x00 #x00    ; 16
             #x01 #x00 #x01 #x00    ; PCM + 1 channel
             #x11 #x2b #x00 #x00    ; sample rate
-            #x11 #x2b #x00 #x00    ; sample rate * channels * bits / 8
-            #x01 #x00 #x08 #x00    ; 1 byte per sample, 8 bits per sample
+            #x22 #x56 #x00 #x00    ; sample rate * channels * bits / 8
+            #x02 #x00 #x10 #x00    ; 2 bytes per sample, 16 bits per sample
             #x64 #x61 #x74 #x61    ; "data"
             #x00 #x00 #x00 #x00))  ; size
 
@@ -47,39 +43,51 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (wave-length seconds)
-  (inexact->exact (round (* seconds (sample-rate)))))
+(define (wave-length duration sample-rate channels bytes-per-sample)
+  (inexact->exact (ceiling (* duration sample-rate channels bytes-per-sample))))
 
 ;; ----------------------------------------------------
 
-(define (make-riff num-samples)
-  (let* ([riff-size (+ riff-header-size num-samples)]
+(define (make-riff u8-samples sample-rate channels bytes-per-sample)
+  (let* ([data-size (u8vector-length u8-samples)]
+         [riff-size (+ riff-header-size data-size)]
          [riff (make-u8vector riff-size)])
 
-    ; copy the rif header into the riff
+    ; copy the default riff header
     (for ([i (in-naturals)]
           [byte riff-header])
       (u8vector-set! riff i byte))
 
-    ; set the sizes and rates
-    (u8vector-set-u32! riff 4 (- riff-size 8))
-    (u8vector-set-u32! riff 40 num-samples)
-    (u8vector-set-u32! riff 24 (sample-rate))
-    (u8vector-set-u32! riff 28 (sample-rate))
+    ; set the number of channels and samples per second
+    (u8vector-set! riff 22 channels)
+    (u8vector-set-u32! riff 24 sample-rate)
 
-    ; final result
+    ; set the number of bytes per second
+    (u8vector-set-u32! riff 28 (* sample-rate channels bytes-per-sample))
+
+    ; set the byte rate and bits per sample
+    (u8vector-set! riff 32 bytes-per-sample)
+    (u8vector-set! riff 34 (* bytes-per-sample 8))
+
+    ; set the size of the data
+    (u8vector-set-u32! riff 40 data-size)
+
+    ; copy the samples
+    (for ([byte u8-samples]
+          [i (in-naturals riff-header-size)])
+      (u8vector-set! riff i byte))
+
+    ; final riff
     riff))
 
 ;; ----------------------------------------------------
 
-(define (write-riff riff offset instrument envelope freq num-samples)
-  (for ([n (range num-samples)])
-    (let* ([amp (/ (* (+ offset n) freq (* pi 2)) (sample-rate))]
-           
-           ; get the sample from the instrument, optionally envelope it
-           [sample (let ([volume (envelope (/ n num-samples))])
-                     (* volume (instrument amp)))]
-           
-           ; convert to a byte
-           [byte (inexact->exact (floor (+ 128 (* sample 127.0))))])
-      (u8vector-set! riff (+ riff-header-size offset n) byte))))
+(define (riff? vec)
+  (and (u8vector? vec)
+       (> (u8vector-length vec) 4)
+
+       ; check header
+       (= (u8vector-ref vec 0) #x52)    ; R
+       (= (u8vector-ref vec 1) #x49)    ; I
+       (= (u8vector-ref vec 2) #x46)    ; F
+       (= (u8vector-ref vec 3) #x46)))  ; F

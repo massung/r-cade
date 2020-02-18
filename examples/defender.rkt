@@ -13,8 +13,8 @@
 
 ;; ----------------------------------------------------
 
-(define launch-sound (sweep 150 50 0.2 #:instrument noise-wave))
-(define boom-sound (tone 100 0.2 #:instrument sawtooth-wave #:envelope fade-out-envelope))
+(define launch-sound (sound (sweep 800 200) 0.75 (voice noise-wave fade-out-envelope)))
+(define boom-sound (sound (tone 50) 2.0 (voice noise-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 

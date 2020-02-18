@@ -16,15 +16,12 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (require "riff.rkt")
+(require "sound.rkt")
 (require "voice.rkt")
 
 ;; ----------------------------------------------------
 
 (provide (all-defined-out))
-
-;; ----------------------------------------------------
-
-(struct tune [riff music])
 
 ;; ----------------------------------------------------
 
@@ -185,7 +182,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define note-regexp #rx"([CDFGA]#|[DEGAB]b|[A-G]|\\.)([0-8])?(-+)?")
+(define note-regexp #rx"([CDFGA]#|[DEGAB]b|[A-G]|[. ])([0-8])?(-+)?")
 
 ;; ----------------------------------------------------
 
@@ -194,18 +191,15 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (parse-notes bpm tune)
-  (for/list ([x (regexp-match* note-regexp tune)])
-    (match (regexp-match note-regexp x)
+  (for/list ([note-string (regexp-match* note-regexp tune)])
+    (match (regexp-match note-regexp note-string)
       [(list _ key octave hold)
-       (let* ([beats (+ 1 (if hold (string-length hold) 0))]
-              [duration (/ (* beats 60.0) bpm)])
-         (note key octave (wave-length duration)))])))
 
-;; ----------------------------------------------------
-
-(define (tune-length notes)
-  (for/sum ([note notes])
-    (note-length note)))
+       ; determine the length of time this note should be held for
+       (let* ([note-length (+ 1 (if hold (string-length hold) 0))]
+              [duration (/ (* note-length 60.0) bpm)]
+              [length (inexact->exact (round (* duration sample-rate)))])
+         (note key octave length))])))
 
 ;; ----------------------------------------------------
 
@@ -213,34 +207,59 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (transcribe-notes string #:bpm [bpm 160] #:instrument [instrument sin])
-  (let* ([notes (parse-notes bpm string)]
-         [riff (make-riff (tune-length notes))])
+(define dt-per-sample (/ sample-rate))
 
-    ; write all the notes to the riff
+;; ----------------------------------------------------
+
+(define (music tune #:tempo [bpm 160] #:instrument [inst sin])
+  (let* ([notes (parse-notes bpm tune)]
+         [num-samples (for/sum ([n notes]) (note-length n))]
+         [samples (make-u8vector (* num-samples bytes-per-sample))])
     (for/fold ([offset 0] [last-octave "4"])
               ([note notes])
       (let* ([key (note-key note)]
-
+             [len (note-length note)]
+          
              ; default to the previous octave if not set for this note
              [octave (or (note-octave note) last-octave)]
-
+           
              ; lookup the frequency of this note+octave
              [freq (hash-ref note-freqs (string-append key octave) 0.0)])
-        (write-riff riff offset instrument adsr freq (note-length note))
+
+        ; write all the samples for this note
+        (for ([n (range len)])
+          (let* ([t (* (+ offset n) dt-per-sample)]
+                 [u (/ n len)]
+
+                 ; amplitude and volume
+                 [amp (inst (* t freq pi 2))]
+                 [vol (adsr u)]
+
+                 ; wave sample
+                 [sample (inexact->exact (round (* half-peak vol amp)))]
+
+                 ; bytes of sample
+                 [b0 (bitwise-and sample #xff)]
+                 [b1 (bitwise-and (arithmetic-shift sample -8) #xff)])
+            (u8vector-set! samples (* (+ offset n) 2) b0)
+            (u8vector-set! samples (+ (* (+ offset n) 2) 1) b1)))
 
         ; update loop state
-        (values (+ offset (note-length note)) octave)))
+        (values (+ offset len) octave)))
 
-    ; create the music object
-    (let ([pointer (u8vector->cpointer riff)]
-          [length (u8vector-length riff)])
-      (tune riff (sfMusic_createFromMemory pointer length)))))
+      ; compile the riff
+    (make-riff samples sample-rate channels bytes-per-sample)))
 
+;; ----------------------------------------------------
+
+(define music? riff?)
+    
 #|
-(define (write-music tune)
-  (let* ([tune (transcribe-notes tune #:bpm bpm)])
-    (with-output-to-file "music.wav" (λ () (write-bytes (tune-riff tune))) #:exists 'replace)))
+(define (write-music tune #:bpm bpm)
+  (let* ([tune (music tune #:tempo bpm #:instrument sin)])
+    (with-output-to-file "music.wav"
+      (λ () (write-bytes tune))
+      #:exists 'replace)))
 
 (define (test)
   (write-music "E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-.E4---C---D---B3---C4---A3---Ab---B-E4---C---D---B3--C4--E-A4--Ab---"

@@ -15,7 +15,16 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(struct voice [instrument envelope])
+(struct voice% [instrument envelope])
+
+;; ----------------------------------------------------
+
+(define (voice instrument [envelope (const 1)])
+  (voice% instrument envelope))
+
+;; ----------------------------------------------------
+
+(define basic-voice (voice sin))
 
 ;; ----------------------------------------------------
 
@@ -29,44 +38,24 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (sawtooth-wave x)
-  (let ([s (fmod x (* pi 2))])
-    (max (min (/ s pi) 1.0) -1.0)))
+(define (square-wave x)
+  (if (> (fmod x (* 2 pi)) pi) 1.0 -1.0))
 
 ;; ----------------------------------------------------
 
-(define (square-wave x)
-  (if (> (sin x) 0.5) 1.0 0.0))
+(define (sawtooth-wave x)
+  (let ([y (/ x (* 2 pi))])
+    (* 2 (- y (floor (+ y 0.5))))))
 
 ;; ----------------------------------------------------
 
 (define (triangle-wave x)
-  (let* ([p (* pi 2.0)]
-         [f (floor (+ (/ (* x 2) p) 1/2))])
-    (* (/ 4 p) (- x (* (/ p 2) f)) (expt -1 f))))
-
-;; ----------------------------------------------------
-
-(define white-noise (for/vector ([_ (range 50)])
-                      (- (random) (random))))
+  (- (* 2 (abs (sawtooth-wave x))) 1))
 
 ;; ----------------------------------------------------
 
 (define (noise-wave x)
-  (let* ([l (vector-length white-noise)]
-         [f (abs (* (/ (fmod x (* pi 2.0)) (* pi 2.0)) (- l 1)))]
-
-         ; prev value and next value
-         [n (inexact->exact (floor f))]
-         [m (remainder (+ n 1) l)]
-
-         ; % from n -> m
-         [t (- f n)]
-
-         ; noise values
-         [v0 (vector-ref white-noise n)]
-         [v1 (vector-ref white-noise m)])
-    (+ v0 (* (- v1 v0) t))))
+  (* (square-wave x) (random)))
 
 ;; ----------------------------------------------------
 
@@ -92,6 +81,10 @@ All rights reserved.
                          [y0 (vector-ref ys u)]
                          [y1 (vector-ref ys (+ u 1))])
                     (+ y0 (* t (- y1 y0))))])))))
+
+;; ----------------------------------------------------
+
+(define basic-envelope (const 1))
 
 ;; ----------------------------------------------------
 

@@ -21,8 +21,8 @@ All rights reserved.
 (require "draw.rkt")
 (require "voice.rkt")
 (require "sound.rkt")
-(require "music.rkt")
 (require "audio.rkt")
+(require "music.rkt")
 
 ;; ----------------------------------------------------
 
@@ -68,12 +68,14 @@ All rights reserved.
  circle
 
  ; voice
+ voice
  sine-wave
  sawtooth-wave
  square-wave
  triangle-wave
  noise-wave
  envelope
+ basic-envelope
  fade-in-envelope
  fade-out-envelope
  z-envelope
@@ -81,21 +83,15 @@ All rights reserved.
  peak-envelope
  trough-envelope
 
- ; sound
+ ; audio
+ music
  sound
- sound?
  tone
  sweep
-
- ; music
- music
- music?
-
- ; audio
- channel?
  play-sound
  stop-sound
+ sound-volume
+ music-volume
  play-music
  stop-music
- pause-music
- )
+ pause-music)

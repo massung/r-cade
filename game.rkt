@@ -20,6 +20,7 @@ All rights reserved.
 (require "input.rkt")
 (require "draw.rkt")
 (require "audio.rkt")
+(require "sound.rkt")
 
 ;; ----------------------------------------------------
 
@@ -157,6 +158,13 @@ All rights reserved.
                                             #f
                                             #f)]
 
+         ; sound mixer
+         [sounds (create-sound-channels 8)]
+
+         ; music channel and riff pointer
+         [music-channel #f]
+         [music-riff #f]
+
          ; playfield size
          [width pixels-wide]
          [height pixels-high]
@@ -209,14 +217,6 @@ All rights reserved.
         ; clean-up shutdown registration
         (unregister-custodian-shutdown (window) v))
 
-      ; stop playing any music
+      ; stop playing sounds and music
       (stop-music)
-      
-      ;; free memory
-      (when (shader)
-        (sfShader_destroy (shader)))
-      (sfClock_destroy (frameclock))
-      (sfSprite_destroy (sprite))
-      (sfRenderTexture_destroy (texture))
-      (sfRenderWindow_close (window))
-      (sfRenderWindow_destroy (window)))))
+      (stop-sound))))

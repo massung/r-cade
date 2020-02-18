@@ -20,8 +20,8 @@
 
 ;; ----------------------------------------------------
 
-(define shoot-sound (sweep 800 600 0.05 #:instrument square-wave #:envelope z-envelope))
-(define boom-sound (tone 100 1.0 #:instrument sawtooth-wave #:envelope fade-out-envelope))
+(define shoot-sound (sound (sweep 800 600) 0.15 (voice square-wave fade-out-envelope)))
+(define boom-sound (sound (tone 50) 2.0 (voice noise-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 

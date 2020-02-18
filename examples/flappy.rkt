@@ -15,8 +15,8 @@
 
 ;; ----------------------------------------------------
 
-(define flap-sound (sweep 100 200 0.1 #:instrument square-wave #:envelope z-envelope))
-(define die-sound (sweep 200 100 0.4  #:instrument sawtooth-wave #:envelope z-envelope))
+(define flap-sound (sound (sweep 100 200) 0.15 (voice square-wave z-envelope)))
+(define die-sound (sound (sweep 200 100) 1.2 (voice sawtooth-wave z-envelope)))
 
 ;; ----------------------------------------------------
 
