@@ -17,7 +17,11 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define palette
+(define palette (make-parameter #f))
+
+;; ----------------------------------------------------
+
+(define basic-palette
   (vector (sfColor_fromRGBA #x00 #x00 #x00 #xff)
           (sfColor_fromRGBA #x1d #x2b #x53 #xff)
           (sfColor_fromRGBA #x7e #x25 #x53 #xff)
@@ -39,7 +43,7 @@ All rights reserved.
 
 (define (set-color! index red green blue)
   (let ([n (bitwise-and index #x0f)]
-        [r (bitwise-and index #xff)]
-        [g (bitwise-and index #xff)]
-        [b (bitwise-and index #xff)])
-    (vector-set! palette n (sfColor_fromRGBA r g b #xff))))
+        [r (bitwise-and red   #xff)]
+        [g (bitwise-and green #xff)]
+        [b (bitwise-and blue  #xff)])
+    (vector-set! (palette) n (sfColor_fromRGBA r g b #xff))))

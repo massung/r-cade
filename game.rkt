@@ -19,6 +19,8 @@ All rights reserved.
 (require "shader.rkt")
 (require "input.rkt")
 (require "draw.rkt")
+(require "palette.rkt")
+(require "font.rkt")
 (require "audio.rkt")
 (require "sound.rkt")
 
@@ -162,6 +164,10 @@ All rights reserved.
                                             sfTransform_Identity
                                             #f
                                             #f)]
+
+         ; default palette and font
+         [palette (for/vector ([c basic-palette]) c)]
+         [font (for/vector ([g basic-font]) g)]
 
          ; sound mixer
          [sounds (create-sound-channels 8)]
