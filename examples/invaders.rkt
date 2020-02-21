@@ -23,12 +23,28 @@
 
 ;; ----------------------------------------------------
 
-(define player-sprite '(#x10 #x38 #x7c #x38 #x38 #xfe #x7c #xfe #xfe))
+(define player-sprite '(#x44 #x92 #xd6 #xfe #xfe #xee #x44))
 
 ;; ----------------------------------------------------
 
 (define barrier-sprites '((#x00 #x7f #xff #xff #xff #xff #xff #xc0)
                           (#x00 #xfe #xff #xff #xff #xff #xff #x03)))
+
+;; ----------------------------------------------------
+
+(define boom-sound (sound (tone 50) 0.5 (voice noise-wave
+                                               fade-out-envelope)))
+
+;; ----------------------------------------------------
+
+(define bomb-sound (sound (sweep 800 440) 0.2 (voice triangle-wave
+                                                     peak-envelope)))
+
+;; ----------------------------------------------------
+
+(define spaceship-sound (sound (tone 300) 5
+                               (voice square-wave
+                                      (envelope 0 1 0 1 0 1 0 1 0 1 0))))
 
 ;; ----------------------------------------------------
 
@@ -57,10 +73,13 @@
 (define invader-x-padding 16)
 (define invader-y-padding 12)
 (define invader-y-step 5)
+(define invader-bomb-timer 0.5)
 
 ;; ----------------------------------------------------
 
 (define spaceship-timer 10.0)
+(define spaceship-missiles null)
+(define spaceship-bomb-timer 0.2)
 (define spaceship #f)
 
 ;; ----------------------------------------------------
@@ -94,6 +113,9 @@
 (define (draw-invader-missiles)
   (color 9)
   (for ([m invader-missiles])
+    (draw (missile-x m) (missile-y m) (missile-sprite m)))
+  (color 8)
+  (for ([m spaceship-missiles])
     (draw (missile-x m) (missile-y m) (missile-sprite m))))
 
 ;; ----------------------------------------------------
@@ -133,6 +155,7 @@
 
     ; spawn when timer expires
     (when (< spaceship-timer 0.0)
+      (play-sound spaceship-sound)
       (set! spaceship (width))
       (set! spaceship-timer (+ (random 10) 10.0)))))
 
@@ -142,7 +165,17 @@
   (when spaceship
     (set! spaceship (- spaceship (* 40 (frametime))))
 
-    ; TODO: drop bombs
+    ; drop bombs
+    (if (< spaceship-bomb-timer 0)
+        (let* ([x spaceship]
+               [y 8]
+               
+               ; spawn the missile
+               [m (missile (+ x 4) (+ y 8) 60.0 '(#x80 #x80))])
+          (play-sound bomb-sound)
+          (set! spaceship-missiles (cons m spaceship-missiles))
+          (set! spaceship-bomb-timer (+ 0.15 (* (random) 0.5))))
+        (set! spaceship-bomb-timer (- spaceship-bomb-timer (frametime))))
 
     ; done?
     (when (< spaceship -8)
@@ -168,7 +201,8 @@
 ;; ----------------------------------------------------
 
 (define (advance-invader-missiles)
-  (set! invader-missiles (filter advance-missile invader-missiles)))
+  (set! invader-missiles (filter advance-missile invader-missiles))
+  (set! spaceship-missiles (filter advance-missile spaceship-missiles)))
 
 ;; ----------------------------------------------------
 
@@ -183,6 +217,9 @@
                          (if (and (<= ix x (+ ix 8))
                                   (<= iy y (+ iy 8)))
                              (begin
+                               (play-sound boom-sound)
+
+                               ; kill missile and award pts
                                (set! player-missile #f)
                                (set! score (+ score 50))
 
@@ -229,6 +266,7 @@
            
            ; spawn the missile
            [m (missile (+ x 4) (+ y 8) 40.0 '(#x80 #x80))])
+      (play-sound bomb-sound)
       (set! invader-missiles (cons m invader-missiles)))))
 
 ;; ----------------------------------------------------
@@ -300,11 +338,18 @@
 (define (next-level)
   (set! player-x (/ (width) 2))
   (set! player-y (- (height) 12))
-  
+  (set! player-missile #f)
   (set! level (+ level 1))
-  
   (set! invader-missiles null)
+  (set! invader-bomb-timer 0.5)
 
+  ; wait for user
+  (color 7)
+  (text 50 43 (format "Prepare! Level ~a" level))
+  (text 50 50 "Press button")
+  (wait)
+
+  ; setup
   (spawn-invaders))
 
 ;; ----------------------------------------------------
@@ -323,6 +368,10 @@
 
 (define (game-loop)
   (cls)
+
+  ; check for level clear
+  (when (and (not spaceship) (empty? invaders))
+    (next-level))
 
   ; draw
   (draw-ground)
@@ -355,8 +404,13 @@
     (launch-missile))
 
   ; drop invader missile
-  (when (< (length invader-missiles) level)
-    (drop-missile))
+  (when (< (length invader-missiles) (* level 2))
+    (if (> invader-bomb-timer 0.0)
+        (set! invader-bomb-timer (- invader-bomb-timer (frametime)))
+        (begin
+          (drop-missile)
+          (when (< invader-bomb-timer 0)
+            (set! invader-bomb-timer 0.5)))))
 
   ; player controls
   (when (and (> player-x 3) (btn-left))

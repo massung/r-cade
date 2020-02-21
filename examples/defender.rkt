@@ -318,7 +318,7 @@
 (define (next-wave)
   (color 7)
   (text 60 40 (format "Ready Wave ~a" (+ wave 1)))
-  (text 60 47 "Press START")
+  (text 60 47 "Press Any Button")
 
   ; show bonus
   (when (> wave 0)
