@@ -74,6 +74,7 @@ All rights reserved.
  square-wave
  triangle-wave
  noise-wave
+ synth
  envelope
  basic-envelope
  fade-in-envelope

@@ -33,6 +33,10 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define sound-queue (make-parameter #f))
+
+;; ----------------------------------------------------
+
 (define (create-sound-channels n)
   (for/list ([_ (range n)])
     (sfSound_create)))
@@ -50,10 +54,19 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define (play-queued-sounds)
+  (for ([buf (remove-duplicates (sound-queue) eq?)])
+    (with-sound (λ (sound)
+                (sfSound_setBuffer sound buf)
+                (sfSound_play sound)))
+
+    ; empty queue
+    (sound-queue null)))
+
+;; ----------------------------------------------------
+
 (define (play-sound buffer)
-  (with-sound (λ (sound)
-                (sfSound_setBuffer sound buffer)
-                (sfSound_play sound))))
+  (sound-queue (cons buffer (sound-queue))))
 
 ;; ----------------------------------------------------
 

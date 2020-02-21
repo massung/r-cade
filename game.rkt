@@ -91,6 +91,9 @@ All rights reserved.
 
 (define (sync)
   (process-events)
+  (play-queued-sounds)
+
+  ; render vram
   (flip (frame) (gametime))
   
   ; wait for the next frame
@@ -150,7 +153,9 @@ All rights reserved.
          [sprite (sfSprite_create)]
 
          ; create a fragment shader for fullscreen rendering
-         [shader (and effect (sfShader_createFromMemory #f #f crt-fragment-shader))]
+         [shader (and effect (sfShader_createFromMemory vertex-shader
+                                                        #f
+                                                        fragment-shader))]
 
          ; default render state
          [render-state (make-sfRenderStates sfBlendAlpha
@@ -160,6 +165,7 @@ All rights reserved.
 
          ; sound mixer
          [sounds (create-sound-channels 8)]
+         [sound-queue null]
 
          ; music channel and riff pointer
          [music-channel #f]

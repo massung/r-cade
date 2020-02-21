@@ -29,30 +29,13 @@ for their hard work!!
 
 |#
 
-(define lcd-shader
-  (string-append "uniform sampler2D texture;"
-                 "uniform vec2 textureSize;"
-                 ""
-                 "void main()"
-                 "{"
-                 "    vec2 invSize = 1.0 / textureSize.xy;"
-                 "    vec2 texCoordInPixels = gl_TexCoord[0] * textureSize;"
-                 "    vec2 centerCoord = floor(texCoordInPixels.xy) + vec2(0.5, 0.5);"
-                 "    vec2 distFromCenter = abs(centerCoord - texCoordInPixels);"
-                 ""
-                 "    float Y = max(distFromCenter.x, distFromCenter.y);"
-                 ""
-                 "    Y = Y * Y;"
-                 "    float YY = Y * Y;"
-                 "    float YYY = YY * Y;"
-                 ""
-                 "    float lineWeight = YY - 2.7 * YYY;"
-                 "    lineWeight = 1.0 - 14.0 * lineWeight;"
-                 ""
-                 "    vec3 color = texture2D(texture, invSize * centerCoord).rgb * lineWeight;"
-                 "    color *= 0.6 + 0.4 * color.rgb;"
-                 ""
-                 "    gl_FragColor = vec4(color.rgb, 1.0);"
+;; ----------------------------------------------------
+
+(define crt-shader
+  (string-append "void main() {"
+                 "    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MutliTexCoord0;"
+                 "    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
+                 "    gl_FrontColor = gl_Color;"
                  "}"))
 
 ;; ----------------------------------------------------
@@ -61,10 +44,9 @@ for their hard work!!
   (string-append "uniform sampler2D texture;"
                  "uniform vec2 textureSize;"
                  ""
-                 "void main()"
-                 "{"
+                 "void main() {"
                  "    float whichMask = fract(gl_FragCoord.x * 0.5);"
-                 "    float mask = 1.0 + float(whichMask < 0.5) * -0.3;"
+                 "    float mask = 1.0 - float(whichMask < 0.5) * 0.3;"
                  ""
                  "    vec2 invSize = 1.0 / textureSize.xy;"
                  "    vec2 texCoordInPixels = gl_TexCoord[0] * textureSize;"
@@ -90,4 +72,5 @@ for their hard work!!
 
 ;; ----------------------------------------------------
 
-(define crt-fragment-shader scanline-shader)
+(define vertex-shader crt-shader)
+(define fragment-shader scanline-shader)

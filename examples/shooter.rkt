@@ -168,4 +168,4 @@
 ;; ----------------------------------------------------
 
 (define (play)
-  (run (new-game) 256 128 #:scale 3 #:title "Shooter"))
+  (run (new-game) 256 128 #:title "Shooter"))

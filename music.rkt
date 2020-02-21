@@ -253,7 +253,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define music? riff?)
-    
+
 #|
 (define (write-music tune #:bpm bpm)
   (let* ([tune (music tune #:tempo bpm #:instrument sin)])
@@ -261,7 +261,5 @@ All rights reserved.
       (λ () (write-bytes tune))
       #:exists 'replace)))
 
-(define (test)
-  (write-music "E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-.E4---C---D---B3---C4---A3---Ab---B-E4---C---D---B3--C4--E-A4--Ab---"
-               #:bpm 280))
+(define (test) (write-music "E4-B3C4D" #:bpm 280))
 |#

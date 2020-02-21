@@ -9,6 +9,8 @@ All rights reserved.
 
 |#
 
+(require racket/match)
+
 ;; ----------------------------------------------------
 
 (provide (all-defined-out))
@@ -28,18 +30,12 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (fmod x d)
-  (let* ([n (* d (truncate (/ x d)))])
-    (- x n)))
-
-;; ----------------------------------------------------
-
 (define sine-wave sin)
 
 ;; ----------------------------------------------------
 
 (define (square-wave x)
-  (if (> (fmod x (* 2 pi)) pi) 1.0 -1.0))
+  (sgn (sin x)))
 
 ;; ----------------------------------------------------
 
@@ -56,6 +52,17 @@ All rights reserved.
 
 (define (noise-wave x)
   (* (square-wave x) (random)))
+
+;; ----------------------------------------------------
+
+(define-syntax synth
+  (syntax-rules ()
+    [(_ (f n) ...)
+     (let ([hs (list (λ (x) (* (f x) n)) ...)])
+       (λ (x)
+         (let ([w (for/sum ([wave hs] [m (in-naturals 1)])
+                    (wave (* x m)))])
+           (min (max (* w) -1) 1))))]))
 
 ;; ----------------------------------------------------
 

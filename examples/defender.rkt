@@ -13,8 +13,14 @@
 
 ;; ----------------------------------------------------
 
-(define launch-sound (sound (sweep 800 200) 0.75 (voice noise-wave fade-out-envelope)))
-(define boom-sound (sound (tone 50) 2.0 (voice noise-wave fade-out-envelope)))
+(define boom-sound (sound (tone 50) 1.25 (voice noise-wave fade-out-envelope)))
+
+(define launch-sound
+  (sound (sweep 800 200) 0.75 (voice (synth (sin 1)
+                                            (sin 0.615)
+                                            (sin 0.885)
+                                            (sin 0.515))
+                                     fade-out-envelope)))
 
 ;; ----------------------------------------------------
 
