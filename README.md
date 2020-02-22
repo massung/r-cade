@@ -15,5 +15,5 @@ If you're interested, head over to the [R-cade][r-cade] website to learn more!
 
 [racket]: https://racket-lang.org/
 [r-cade]: https://r-cade.io/
-[breakout]: https://r-cade.io/files/breakout.gif
-[flappy]: https://r-cade.io/files/flappy.gif
+[breakout]: https://r-cade.io/files/_breakout.gif
+[flappy]: https://r-cade.io/files/_flappy.gif
