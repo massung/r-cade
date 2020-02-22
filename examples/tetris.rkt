@@ -67,7 +67,7 @@
 
 ;; ----------------------------------------------------
 
-(define chime (sound (tone 100) 0.1 (voice square-wave fade-out-envelope)))
+(define chime (tone 100 0.1 (voice square-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 

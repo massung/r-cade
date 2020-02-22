@@ -17,16 +17,11 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(struct voice% [instrument envelope])
+(struct voice [instrument envelope])
 
 ;; ----------------------------------------------------
 
-(define (voice instrument [envelope (const 1)])
-  (voice% instrument envelope))
-
-;; ----------------------------------------------------
-
-(define basic-voice (voice sin))
+(define basic-voice (voice sin (const 1)))
 
 ;; ----------------------------------------------------
 

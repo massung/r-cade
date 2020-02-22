@@ -32,19 +32,15 @@
 
 ;; ----------------------------------------------------
 
-(define boom-sound (sound (tone 50) 0.5 (voice noise-wave
-                                               fade-out-envelope)))
+(define boom-sound (tone 50 0.5 (voice noise-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 
-(define bomb-sound (sound (sweep 800 440) 0.2 (voice triangle-wave
-                                                     peak-envelope)))
+(define bomb-sound (sweep 500 440 0.1 (voice triangle-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 
-(define spaceship-sound (sound (tone 300) 5
-                               (voice square-wave
-                                      (envelope 0 1 0 1 0 1 0 1 0 1 0))))
+(define spaceship-sound (tone 300 5 (voice square-wave (envelope 0 0.4 0 0.4 0 0.4 0 0.4 0 0.4 0))))
 
 ;; ----------------------------------------------------
 
@@ -171,7 +167,7 @@
                [y 8]
                
                ; spawn the missile
-               [m (missile (+ x 4) (+ y 8) 60.0 '(#x80 #x80))])
+               [m (missile (+ x 4) (+ y 8) 60.0 '(#x40 #xe0 #x40))])
           (play-sound bomb-sound)
           (set! spaceship-missiles (cons m spaceship-missiles))
           (set! spaceship-bomb-timer (+ 0.15 (* (random) 0.5))))
@@ -271,33 +267,40 @@
 
 ;; ----------------------------------------------------
 
+(define (collide-barriers m)
+  (let ([mx (inexact->exact (round (missile-x m)))]
+        [my (inexact->exact (round (missile-y m)))])
+
+    ; is the missle within the y-boundary of barriers?
+    (when (<= barrier-y my (+ barrier-y 7))
+      (for ([b barriers])
+        (let ([bx (barrier-x b)])
+
+          ; is the missile within the x-boundary of the barrier?
+          (when (<= bx mx (+ bx 7))
+            (let ([barrier-bits (barrier-sprite b)])
+              (for ([missile-bits (missile-sprite m)]
+
+                    ; scanline y-offset from the top of barrier
+                    [y (range (- my barrier-y) 7)])
+              
+                ; does the missile sprite bitmask intersect the barrier?
+                (let ([bbits (list-ref barrier-bits y)]
+                      [mbits (arithmetic-shift missile-bits (- bx mx))])
+                  (unless (zero? (bitwise-and mbits bbits))
+                    (let ([n (bitwise-and bbits (bitwise-not mbits))])
+                      (set-barrier-sprite! b (list-set barrier-bits y n)))
+
+                    ; move the missile off-screen
+                    (set-missile-y! m (height))))))))))))
+
+;; ----------------------------------------------------
+
 (define (destroy-barriers)
   (for ([m invader-missiles])
-    (let ([mx (inexact->exact (round (missile-x m)))]
-          [my (inexact->exact (round (missile-y m)))])
-
-      ; is the missle within the y-boundary of barriers?
-      (when (<= barrier-y my (+ barrier-y 7))
-        (for ([b barriers])
-          (let ([bx (barrier-x b)])
-
-            ; is the missile within the x-boundary of the barrier?
-            (when (<= bx mx (+ bx 7))
-              (let ([barrier-bits (barrier-sprite b)])
-                (for ([missile-bits (missile-sprite m)]
-
-                      ; scanline y-offset from the top of barrier
-                      [y (range (- my barrier-y) 7)])
-              
-                  ; does the missile sprite bitmask intersect the barrier?
-                  (let ([bbits (list-ref barrier-bits y)]
-                        [mbits (arithmetic-shift missile-bits (- bx mx))])
-                    (unless (zero? (bitwise-and mbits bbits))
-                      (let ([n (bitwise-and bbits (bitwise-not mbits))])
-                        (set-barrier-sprite! b (list-set barrier-bits y n)))
-
-                      ; move the missile off-screen
-                      (set-missile-y! m (height)))))))))))))
+    (collide-barriers m))
+  (for ([m spaceship-missiles])
+    (collide-barriers m)))
 
 ;; ----------------------------------------------------
 
@@ -355,14 +358,9 @@
 ;; ----------------------------------------------------
 
 (define (new-game)
-  (set! level 10)
+  (set! level 0)
   (set! score 0)
-
-  ; create the barriers
-  (spawn-barriers)
-
-  ; advance to the next level
-  (next-level))
+  (spawn-barriers))
 
 ;; ----------------------------------------------------
 

@@ -71,7 +71,10 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (stop-sound)
-  (for-each sfSound_stop (sounds)))
+  (for-each sfSound_stop (sounds))
+
+  ; clear the sound queue so new sounds don't play
+  (sound-queue null))
 
 ;; ----------------------------------------------------
 

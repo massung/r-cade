@@ -13,7 +13,7 @@ R-cade is a simple, retro game engine for Racket.
 @;; ----------------------------------------------------
 @section{Homepage}
 
-All the most recent updates, blog posts, etc. can be found at @url{http://r-cade.io}.
+All the most recent updates, blog posts, etc. can be found at @hyperlink{http://r-cade.io}.
 
 
 @;; ----------------------------------------------------
@@ -171,7 +171,7 @@ If @racket[rate] is @racket[#f] (the default), then the action is defined as @ra
 
 If @racket[rate] is @racket[#t] then the action will return @racket[#t] if the @racket[btn] returns @tt{1}, indicating it was just pressed this frame.
 
-Othweise, @racket[rate] should be a non-negative integer indicating how many times per seconds the action function should return @racket[#t] assuming the button is held down. This is useful for actions like shooting that shouldn't happen every frame, but you also don't want the user to have to keep pressing the input button.
+Otherwise, @racket[rate] should be a non-negative integer indicating how many times per seconds the action function should return @racket[#t] assuming the button is held down. This is useful for actions like shooting that shouldn't happen every frame, but you also don't want the user to have to keep pressing the input button.
 
 @racketblock[
  (define-action move-left btn-left)
@@ -242,17 +242,14 @@ Draw a circle with its center at (@racket[x],@racket[y]) and radius @racket[r] u
 @;; ----------------------------------------------------
 @section{Sound}
 
-All audio is played by composing 8-bit PCM WAV data.
+All audio is played by composing 16-bit PCM WAV data. Audio data is created using the @racket[sound] and @racket[music] functions.
 
 
 @;; ----------------------------------------------------
-@defproc[(sound [curve procedure?]
-                [seconds real?]
-                [#:instrument wave-function procedure? sin]
-                [#:envelope envelope procedure? (const 1)]) sound?]{
-All sounds are made using the sound function. The @racket[curve] argument is a function that is given a single value in the range of [@tt{0.0}, @tt{1.0}] and should return a frequency to play at that time; @tt{0.0} is the beginning of the waveform and @tt{1.0} is the end. The seconds parameter defines the length of the waveform.
+@defproc[(voice [instrument procedure?] [envelope procedure?]) voice?]{
+All sounds (and music) are played using voices. A voice is both an @racket[instrument] (wave function) and an @racket[envelope] (volume function).
 
-The @racket[#:instrument] is the wave function to use and defaults to a simple sine wave. Some pre-defined wave functions include:
+The @racket[instrument] function is like @racket[sin] or @racket[cos]. It is given a value in the range of @tt{[0.0, 2pi]} and returns a value in the range of @tt{[-1.0, 1.0]}. Aside from any built-in Racket functions (e.g. @racket[sin] and @racket[cos]) there are 4 other pre-defined wave functions you can use:
 
 @itemlist[
  @item{@racket[sawtooth-wave]}
@@ -261,18 +258,48 @@ The @racket[#:instrument] is the wave function to use and defaults to a simple s
  @item{@racket[noise-wave]}
 ]
 
-You can also define your own wave functions. It should take a single argument in the range of [@tt{0.0}, @tt{2π}] and the return value should be in the range of [@tt{-1.0}, @tt{1.0}].
+Additionally, you can create your own wave functions (instruments) with the @racket[synth] macro.
 
-The @racket[#:envelope] is an amplitude multiplier. It is a function which - like @racket[curve] - is given a single value in the range [@tt{0.0}, @tt{1.0}] indicating where in the sound it is. It should return a value in the range [@tt{0.0}, @tt{1.0}], where @tt{0.0} indicates a null amplitude and @tt{1.0} indicates full amplitude. The default is to simply play the entire sound at full amplitude. Some pre-defined envelopes include:
+The @racket[envelope] function is used to set the volume of a sound over the duration of it. The @racket[envelope] function is given a single value in the range [@tt{0.0}, @tt{1.0}] indicating where in the sound it is. It should return a value in the range [@tt{0.0}, @tt{1.0}], where @tt{0.0} indicates a null amplitude and @tt{1.0} indicates full amplitude. Some pre-defined envelopes include:
 
 @itemlist[
+ @item{@racket[basic-envelope]}
  @item{@racket[fade-in-envelope]}
  @item{@racket[fade-out-envelope]}
  @item{@racket[z-envelope]}
  @item{@racket[s-envelope]}
+ @item{@racket[peak-envelope]}
+ @item{@racket[trough-envelope]}
 ]
 
 There is also an @racket[envelope] function that helps with the creation of your own envelopes.
+}
+
+
+@;; ----------------------------------------------------
+@defform/subs[(synth (wave-function q) ...)
+              ([wave-function procedure?]
+               [q real?])]{
+Creates a lambda function that is the combination of multiple @racket[wave-function]s at frequency harmonics, each muliplied by @racket[q].
+
+Each @racket[wave-function] should be any wave function that can be validly passed as an @racket[#:instrument] to @racket[sound] or @racket[music]. Most common would be @racket[sin] and @racket[cos]. For each @racket[wave-function] there should also be a corresponding @racket[q] argument that is how much that wave function will be multiplied by.
+
+The wave functions are passed the frequency harmonic of the sound they are used for in the order they are provided to the @racket[synth] macro. For example, if the sound is playing a solid tone of 440 Hz, then the first wave function will be at 440 Hz, the second wave function at 880 Hz, the third at 1320 Hz, etc.
+
+For example:
+
+@racketblock[
+ (synth (sin  1.0)     ; sin(x)     *  1.0
+        (cos  0.3)     ; cos(x * 2) *  0.3
+        (sin  0.1)     ; sin(x * 3) *  0.1
+        (cos -0.3))    ; cos(x * 4) * -0.3
+]
+
+The function returned takes the x argument, applies it to each of the harmonics and returns the sum of them.
+
+A simple online tool for playing with harmonic sound functions can be found at @hyperlink{https://meettechniek.info/additional/additive-synthesis.html}.
+
+@italic{TIP: Instead of just the generic sine and cosine functions, trying sythenizing with some other wave functions like triangle-wave and noise-wave!}
 }
 
 
@@ -286,11 +313,64 @@ This means that in the time range of [@tt{0.0}, @racket[0.33]] the sound will pl
 
 
 @;; ----------------------------------------------------
+@defthing[square-wave procedure?]{A wave function that may be passed as an instrument.}
+
+
+@;; ----------------------------------------------------
+@defthing[triangle-wave procedure?]{A wave function that may be passed as an instrument.}
+
+
+@;; ----------------------------------------------------
+@defthing[sawtooth-wave procedure?]{A wave function that may be passed as an instrument.}
+
+
+@;; ----------------------------------------------------
+@defthing[noise-wave procedure?]{A wave function that may be passed as an instrument].}
+
+
+@;; ----------------------------------------------------
+@defthing[basic-envelope procedure? #:value (const 1)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@defthing[fade-in-envelope procedure? #:value (envelope 0 1)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@defthing[fade-out-envelope procedure? #:value (envelope 1 0)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@defthing[z-envelope procedure? #:value (envelope 1 1 0 0)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@defthing[s-envelope procedure? #:value (envelope 0 0 1 1)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@defthing[peak-envelope procedure? #:value (envelope 0 1 0)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@defthing[trough-envelope procedure? #:value (envelope 1 0 1)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@defproc[(sound [curve procedure?]
+                [seconds real?]
+                [voice voice? basic-voice]) sound?]{
+All sounds are made using the sound function. The @racket[curve] argument is a function that is given a single value in the range of [@tt{0.0}, @tt{1.0}] and should return a frequency to play at that time; @tt{0.0} is the beginning of the waveform and @tt{1.0} is the end. The seconds parameter defines the length of the waveform.
+
+The @racket[voice] is used to define the wave function and volume envelope used when generating the PCM data for this sound. It is optional, and the default voice is just a simple @racket[sin] wave and the @racket[basic-envelope].
+}
+
+
+@;; ----------------------------------------------------
 @defproc[(tone [freq real?]
                [seconds real?]
-               [#:instrument wave-function procedure? sin]
-               [#:envelope envelope procedure? (const 1)]) sound?]{
-This is a simple helper function for generating sounds of a constant frequency for a period of @racket[seconds]. See @racket[sound].
+               [voice voice? basic-voice]) sound?]{
+Helper function that returns a @racket[sound] that plays a constant frequency.
 }
 
 
@@ -298,63 +378,27 @@ This is a simple helper function for generating sounds of a constant frequency f
 @defproc[(sweep [start-freq real?]
                 [end-freq real?]
                 [seconds real?]
-                [#:instrument wave-function procedure? sin]
-                [#:envelope envelope procedure? (const 1)]) sound?]{
-This is a simple helper function for generating a sound that linearly interpolates its frequency from @racket[start-freq] to @racket[end-freq] over a period of @racket[seconds]. See @racket[sound].
+                [voice voice? basic-voice]) sound?]{
+Helper function that returns a @racket[sound] using a curve function that linearly interpolates from @racket[start-freq] to @racket[end-freq].
 }
 
 
 @;; ----------------------------------------------------
-@defthing[square-wave procedure?]{A wave function that may be passed as an @racket[#:instrument].}
+@defproc[(sound? [x any]) boolean?]{Returns @racket[#t] if @racket[x] is a PCM sound buffer.}
 
 
 @;; ----------------------------------------------------
-@defthing[triangle-wave procedure?]{A wave function that may be passed as an @racket[#:instrument].}
-
-
-@;; ----------------------------------------------------
-@defthing[sawtooth-wave procedure?]{A wave function that may be passed as an @racket[#:instrument].}
-
-
-@;; ----------------------------------------------------
-@defthing[noise-wave procedure?]{A wave function that may be passed as an @racket[#:instrument].}
-
-
-@;; ----------------------------------------------------
-@defthing[fade-in-envelope procedure? #:value (envelope 0 1)]{An envelope function that may be passed as an @racket[#:envelope].}
-
-
-@;; ----------------------------------------------------
-@defthing[fade-out-envelope procedure? #:value (envelope 1 0)]{An envelope function that may be passed as an @racket[#:envelope].}
-
-
-@;; ----------------------------------------------------
-@defthing[z-envelope procedure? #:value (envelope 1 1 0 0)]{An envelope function that may be passed as an @racket[#:envelope].}
-
-
-@;; ----------------------------------------------------
-@defthing[s-envelope procedure? #:value (envelope 0 0 1 1)]{An envelope function that may be passed as an @racket[#:envelope].}
-
-
-@;; ----------------------------------------------------
-@defproc[(sound? [x any]) boolean?]{Returns @racket[#t] if @racket[x] is a sound object.}
-
-
-@;; ----------------------------------------------------
-@defproc[(play-sound [sound sound?]
-                     [#:volume volume real? 100.0]
-                     [#:pitch pitch real? 1.0]
-                     [#:loop loop boolean? #f]) channel?]{
-Uses one of 4 sound channels to play the sound. If no channels are available then the sound will not be played. Returns the sound channel it is playing on or @racket[#f].
+@defproc[(play-sound [sound sound?]) void?]{
+Queues the sound buffer to be played on one of 8 sound channels. If no sound channels are available then the sound will not be played.
 }
 
 
 @;; ----------------------------------------------------
-@defproc[(stop-sound [channel channel?]) void?]{Stops the sound currently playing on the @racket[channel] specified.}
+@defproc[(stop-sound) void?]{Stops all sounds currently playing and clears the sound queue.}
 
 
 @;; ----------------------------------------------------
-@defproc[(channel? [x any]) boolean?]{Returns @racket[#t] if @racket[x] is a channel object.}
+@defproc[(sound-volume [vol real?]) void?]{Sets the volume of all sounds played. @racket[0.0] is muted and @racket[100.0] is full volume.}
 
 
 @;; ----------------------------------------------------
@@ -365,7 +409,7 @@ Music is created by parsing notes and creating an individual waveform for each n
 
 @;; ----------------------------------------------------
 @defproc[(music [notes string?]
-                [#:bpm beats-per-minute exact-nonnegative-integer? 160]
+                [#:tempo beats-per-minute exact-nonnegative-integer? 160]
                 [#:instrument wave-function procedure? sin]) music?]{
 Parses the @racket[notes] string and builds a waveform for each note. Notes are in the format @tt{<key>[<octave>][<hold>]}. For example:
 
@@ -376,22 +420,19 @@ Parses the @racket[notes] string and builds a waveform for each note. Notes are 
 
 The default octave is 4, but once an octave is specified for a note then that becomes the new default octave for subsequent notes.
 
-How long each note is held for (in seconds) is determined by the @racket[#:bpm] (beats per minute) parameter. A single beat is assumed to be a single quarter-note. So, with a little math, a @tt{"C#--"} at a rate of 160 BPM would play for 1.125 seconds (3 beats * 60 s/m ÷ 160 bpm). It is not possible to specify 1/8th and 1/16th notes. In order to achieve them, increase the @racket[#:bpm] appropriately.
+How long each note is held for (in seconds) is determined by the @racket[#:tempo] (beats per minute) parameter. A single beat is assumed to be a single quarter-note. So, with a little math, a @tt{"C#--"} at a rate of 160 BPM would play for 1.125 seconds (3 beats * 60 s/m ÷ 160 bpm). It is not possible to specify 1/8th and 1/16th notes. In order to achieve them, increase the @racket[#:tempo] appropriately.
 
-All note waveforms are played with an ADSR (attack, decay, sustain, release) envelope. This cannot be overridden.
+All notes are played with an ADSR (attack, decay, sustain, release) envelope. This cannot be overridden.
 }
 
 
 @;; ----------------------------------------------------
-@defproc[(music? [x any]) boolean?]{Returns @racket[#t] if @racket[x] is a music object.}
+@defproc[(music? [x any]) boolean?]{Returns @racket[#t] if @racket[x] is a PCM music object.}
 
 
 @;; ----------------------------------------------------
-@defproc[(play-music [tune music?]
-                     [#:volume volume real? 100.0]
-                     [#:pitch pitch real? 1.0]
-                     [#:loop loop boolean? #t]) void?]{
-Stops any music currently playing and starts playing @racket[tune]. The@racket[volume], @racket[pitch], and @racket[loop] parameters are the same as those of the @racket[play-sound] function.
+@defproc[(play-music [riff music?] [#:loop loop boolean? #t]) void?]{
+Stops any music currently playing and starts playing @racket[riff]. The @racket[loop] parameter will determine whether the @racket[riff] stops or repeats when finished.
 }
 
 
@@ -401,3 +442,7 @@ Stops any music currently playing and starts playing @racket[tune]. The@racket[v
 
 @;; ----------------------------------------------------
 @defproc[(pause-music [pause boolean? #t]) void?]{If pause is @racket[#t] then the currently playing music is paused, otherwise it is resumed. If the music was not already pausedy and is told to resume, it will instead restart from the beginning.}
+
+
+@;; ----------------------------------------------------
+@defproc[(music-volume [vol real?]) void?]{Sets the volume of any music played. @racket[0.0] is muted and @racket[100.0] is full volume.}

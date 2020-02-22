@@ -211,7 +211,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (music tune #:tempo [bpm 160] #:instrument [inst sin])
+(define (music tune #:tempo [bpm 160] #:instrument [instrument sin])
   (let* ([notes (parse-notes bpm tune)]
          [num-samples (for/sum ([n notes]) (note-length n))]
          [samples (make-u8vector (* num-samples bytes-per-sample))])
@@ -232,7 +232,7 @@ All rights reserved.
                  [u (/ n len)]
 
                  ; amplitude and volume
-                 [amp (inst (* t freq pi 2))]
+                 [amp (instrument (* t freq pi 2))]
                  [vol (adsr u)]
 
                  ; wave sample
@@ -256,7 +256,7 @@ All rights reserved.
 
 #|
 (define (write-music tune #:bpm bpm)
-  (let* ([tune (music tune #:tempo bpm #:instrument sin)])
+  (let* ([tune (music tune sin #:tempo bpm)])
     (with-output-to-file "music.wav"
       (λ () (write-bytes tune))
       #:exists 'replace)))

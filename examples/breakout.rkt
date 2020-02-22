@@ -45,15 +45,15 @@
 
 ;; ----------------------------------------------------
 
-(define bounce (sound (sweep 440 300) 0.1 (voice sawtooth-wave z-envelope)))
+(define bounce (sweep 440 300 0.1 (voice sawtooth-wave z-envelope)))
 
 ;; ----------------------------------------------------
 
-(define boop (sound (tone 200) 0.15 (voice square-wave fade-out-envelope)))
+(define boop (tone 200 0.15 (voice square-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 
-(define die (sound (sweep 200 100) 0.8 (voice sawtooth-wave fade-out-envelope)))
+(define die (sweep 200 100 0.8 (voice sawtooth-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 

@@ -17,7 +17,7 @@
 
 ;; ----------------------------------------------------
 
-(define yum (sound (sweep 300 100) 0.1 (voice square-wave)))
+(define yum (sweep 300 100 0.1 (voice square-wave basic-envelope)))
 
 ;; ----------------------------------------------------
 

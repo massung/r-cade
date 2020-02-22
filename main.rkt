@@ -68,7 +68,8 @@ All rights reserved.
  circle
 
  ; voice
- voice
+ (struct-out voice)
+ basic-voice
  sine-wave
  sawtooth-wave
  square-wave

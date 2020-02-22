@@ -33,10 +33,8 @@ All rights reserved.
 (define (sound curve duration [voice basic-voice])
   (let* ([count (inexact->exact (ceiling (* duration sample-rate)))]
          [samples (make-s16vector count)]
-
-         ; wave and envelope functions
-         [instrument (voice%-instrument voice)]
-         [envelope (voice%-envelope voice)])
+         [instrument (voice-instrument voice)]
+         [envelope (voice-envelope voice)])
 
     ; fill sample buffer
     (for ([n (range count)])
@@ -60,11 +58,13 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (tone freq)
-  (const freq))
+(define (tone freq seconds [voice basic-voice])
+  (sound (const freq) seconds voice))
 
 ;; ----------------------------------------------------
 
-(define (sweep start-hz end-hz)
-  (λ (u)
-    (+ start-hz (* (- end-hz start-hz) u))))
+(define (sweep start-hz end-hz seconds [voice basic-voice])
+  (let ([curve (λ (u)
+                 (+ start-hz (* (- end-hz start-hz) u)))])
+    (sound curve seconds voice)))
+
