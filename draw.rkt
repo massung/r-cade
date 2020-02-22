@@ -82,12 +82,12 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (cls [c 0])
-  (sfRenderTexture_clear (texture) (vector-ref palette (bitwise-and c #xf))))
+  (sfRenderTexture_clear (texture) (vector-ref (palette) (bitwise-and c #xf))))
 
 ;; ----------------------------------------------------
 
 (define (color n)
-  (let ([c (vector-ref palette (bitwise-and n #xf))])
+  (let ([c (vector-ref (palette) (bitwise-and n #xf))])
     (sfSprite_setColor bitmask-sprite c)))
 
 ;; ----------------------------------------------------
@@ -111,7 +111,7 @@ All rights reserved.
   (for ([i (range x (width) 4)] [ch (~a s)])
     (let ([n (char->integer ch)])
       (when (<= 33 n 127)
-        (draw i y (vector-ref font (- n 33)))))))
+        (draw i y (vector-ref (font) (- n 33)))))))
 
 ;; ----------------------------------------------------
 

@@ -19,7 +19,10 @@ All rights reserved.
 (require "shader.rkt")
 (require "input.rkt")
 (require "draw.rkt")
+(require "palette.rkt")
+(require "font.rkt")
 (require "audio.rkt")
+(require "sound.rkt")
 
 ;; ----------------------------------------------------
 
@@ -90,6 +93,9 @@ All rights reserved.
 
 (define (sync)
   (process-events)
+  (play-queued-sounds)
+
+  ; render vram
   (flip (frame) (gametime))
   
   ; wait for the next frame
@@ -149,13 +155,27 @@ All rights reserved.
          [sprite (sfSprite_create)]
 
          ; create a fragment shader for fullscreen rendering
-         [shader (and effect (sfShader_createFromMemory #f #f crt-fragment-shader))]
+         [shader (and effect (sfShader_createFromMemory vertex-shader
+                                                        #f
+                                                        fragment-shader))]
 
          ; default render state
          [render-state (make-sfRenderStates sfBlendAlpha
                                             sfTransform_Identity
                                             #f
                                             #f)]
+
+         ; default palette and font
+         [palette (for/vector ([c basic-palette]) c)]
+         [font (for/vector ([g basic-font]) g)]
+
+         ; sound mixer
+         [sounds (create-sound-channels 8)]
+         [sound-queue null]
+
+         ; music channel and riff pointer
+         [music-channel #f]
+         [music-riff #f]
 
          ; playfield size
          [width pixels-wide]
@@ -209,14 +229,6 @@ All rights reserved.
         ; clean-up shutdown registration
         (unregister-custodian-shutdown (window) v))
 
-      ; stop playing any music
+      ; stop playing sounds and music
       (stop-music)
-      
-      ;; free memory
-      (when (shader)
-        (sfShader_destroy (shader)))
-      (sfClock_destroy (frameclock))
-      (sfSprite_destroy (sprite))
-      (sfRenderTexture_destroy (texture))
-      (sfRenderWindow_close (window))
-      (sfRenderWindow_destroy (window)))))
+      (stop-sound))))

@@ -13,8 +13,11 @@
 
 ;; ----------------------------------------------------
 
-(define launch-sound (sweep 150 50 0.2 #:instrument noise-wave))
-(define boom-sound (tone 100 0.2 #:instrument sawtooth-wave #:envelope fade-out-envelope))
+(define boom-sound (tone 50 1.25 (voice noise-wave fade-out-envelope)))
+
+;; ----------------------------------------------------
+
+(define launch-sound (sweep 600 400 0.75 (voice sawtooth-wave fade-out-envelope)))
 
 ;; ----------------------------------------------------
 
@@ -312,7 +315,7 @@
 (define (next-wave)
   (color 7)
   (text 60 40 (format "Ready Wave ~a" (+ wave 1)))
-  (text 60 47 "Press START")
+  (text 60 47 "Press Any Button")
 
   ; show bonus
   (when (> wave 0)

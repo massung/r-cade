@@ -9,6 +9,8 @@ All rights reserved.
 
 |#
 
+(require racket/match)
+
 ;; ----------------------------------------------------
 
 (provide (all-defined-out))
@@ -19,9 +21,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (fmod x d)
-  (let* ([n (* d (truncate (/ x d)))])
-    (- x n)))
+(define basic-voice (voice sin (const 1)))
 
 ;; ----------------------------------------------------
 
@@ -29,44 +29,35 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (sawtooth-wave x)
-  (let ([s (fmod x (* pi 2))])
-    (max (min (/ s pi) 1.0) -1.0)))
+(define (square-wave x)
+  (sgn (sin x)))
 
 ;; ----------------------------------------------------
 
-(define (square-wave x)
-  (if (> (sin x) 0.5) 1.0 0.0))
+(define (sawtooth-wave x)
+  (let ([y (/ x (* 2 pi))])
+    (* 2 (- y (floor (+ y 0.5))))))
 
 ;; ----------------------------------------------------
 
 (define (triangle-wave x)
-  (let* ([p (* pi 2.0)]
-         [f (floor (+ (/ (* x 2) p) 1/2))])
-    (* (/ 4 p) (- x (* (/ p 2) f)) (expt -1 f))))
-
-;; ----------------------------------------------------
-
-(define white-noise (for/vector ([_ (range 50)])
-                      (- (random) (random))))
+  (- (* 2 (abs (sawtooth-wave x))) 1))
 
 ;; ----------------------------------------------------
 
 (define (noise-wave x)
-  (let* ([l (vector-length white-noise)]
-         [f (abs (* (/ (fmod x (* pi 2.0)) (* pi 2.0)) (- l 1)))]
+  (* (square-wave x) (random)))
 
-         ; prev value and next value
-         [n (inexact->exact (floor f))]
-         [m (remainder (+ n 1) l)]
+;; ----------------------------------------------------
 
-         ; % from n -> m
-         [t (- f n)]
-
-         ; noise values
-         [v0 (vector-ref white-noise n)]
-         [v1 (vector-ref white-noise m)])
-    (+ v0 (* (- v1 v0) t))))
+(define-syntax synth
+  (syntax-rules ()
+    [(_ (f n) ...)
+     (let ([hs (list (λ (x) (* (f x) n)) ...)])
+       (λ (x)
+         (let ([w (for/sum ([wave hs] [m (in-naturals 1)])
+                    (wave (* x m)))])
+           (min (max (* w) -1) 1))))]))
 
 ;; ----------------------------------------------------
 
@@ -92,6 +83,10 @@ All rights reserved.
                          [y0 (vector-ref ys u)]
                          [y1 (vector-ref ys (+ u 1))])
                     (+ y0 (* t (- y1 y0))))])))))
+
+;; ----------------------------------------------------
+
+(define basic-envelope (const 1))
 
 ;; ----------------------------------------------------
 
