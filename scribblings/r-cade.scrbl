@@ -13,7 +13,7 @@ R-cade is a simple, retro game engine for Racket.
 @;; ----------------------------------------------------
 @section{Homepage}
 
-All the most recent updates, blog posts, etc. can be found at @hyperlink{http://r-cade.io}.
+All the most recent updates, blog posts, etc. can be found at @url{http://r-cade.io}.
 
 
 @;; ----------------------------------------------------
@@ -240,14 +240,13 @@ Draw a circle with its center at (@racket[x],@racket[y]) and radius @racket[r] u
 
 
 @;; ----------------------------------------------------
-@section{Sound}
+@section{Voices}
 
-All audio is played by composing 16-bit PCM WAV data. Audio data is created using the @racket[sound] and @racket[music] functions.
+All sounds (and music) are played using voices. A voice is both an "instrument" (wave function) and an "envelope" (volume function).
 
 
 @;; ----------------------------------------------------
 @defproc[(voice [instrument procedure?] [envelope procedure?]) voice?]{
-All sounds (and music) are played using voices. A voice is both an @racket[instrument] (wave function) and an @racket[envelope] (volume function).
 
 The @racket[instrument] function is like @racket[sin] or @racket[cos]. It is given a value in the range of @tt{[0.0, 2pi]} and returns a value in the range of @tt{[-1.0, 1.0]}. Aside from any built-in Racket functions (e.g. @racket[sin] and @racket[cos]) there are 4 other pre-defined wave functions you can use:
 
@@ -277,12 +276,20 @@ There is also an @racket[envelope] function that helps with the creation of your
 
 
 @;; ----------------------------------------------------
+@defproc[(voice? [x any]) boolean?]{Returns @racket[#t] if @racket[x] is a valid @racket[voice] object.}
+
+
+@;; ----------------------------------------------------
+@defthing[basic-voice voice? #:value (voice sin basic-envelope)]{The default @racket[voice] used to create sounds.}
+
+
+@;; ----------------------------------------------------
 @defform/subs[(synth (wave-function q) ...)
               ([wave-function procedure?]
                [q real?])]{
 Creates a lambda function that is the combination of multiple @racket[wave-function]s at frequency harmonics, each muliplied by @racket[q].
 
-Each @racket[wave-function] should be any wave function that can be validly passed as an @racket[#:instrument] to @racket[sound] or @racket[music]. Most common would be @racket[sin] and @racket[cos]. For each @racket[wave-function] there should also be a corresponding @racket[q] argument that is how much that wave function will be multiplied by.
+Each @racket[wave-function] can be any function valid as the instrument of a @racket[voice]. Most common would be @racket[sin] and @racket[cos]. For each @racket[wave-function] there should also be a corresponding @racket[q] argument that is how much that wave function will be multiplied by.
 
 The wave functions are passed the frequency harmonic of the sound they are used for in the order they are provided to the @racket[synth] macro. For example, if the sound is playing a solid tone of 440 Hz, then the first wave function will be at 440 Hz, the second wave function at 880 Hz, the third at 1320 Hz, etc.
 
@@ -295,9 +302,19 @@ For example:
         (cos -0.3))    ; cos(x * 4) * -0.3
 ]
 
+The above would be equivelant to the following wave function:
+
+@racketblock[
+ (λ (x)
+   (+ (* (sin x) 1.0)
+      (* (cos (* x 2)) 0.3)
+      (* (sin (* x 3)) 0.1)
+      (* (cos (* x 4)) -0.3)))
+]
+
 The function returned takes the x argument, applies it to each of the harmonics and returns the sum of them.
 
-A simple online tool for playing with harmonic sound functions can be found at @hyperlink{https://meettechniek.info/additional/additive-synthesis.html}.
+A simple online tool for playing with harmonic sound functions can be found at @url{https://meettechniek.info/additional/additive-synthesis.html}.
 
 @italic{TIP: Instead of just the generic sine and cosine functions, trying sythenizing with some other wave functions like triangle-wave and noise-wave!}
 }
@@ -354,6 +371,12 @@ This means that in the time range of [@tt{0.0}, @racket[0.33]] the sound will pl
 
 @;; ----------------------------------------------------
 @defthing[trough-envelope procedure? #:value (envelope 1 0 1)]{An envelope function that may be passed as an envelope.}
+
+
+@;; ----------------------------------------------------
+@section{Sound}
+
+All audio is played by composing 16-bit PCM WAV data using a @racket[voice]. Audio data that can be played is created using the @racket[sound] and @racket[music] functions.
 
 
 @;; ----------------------------------------------------
