@@ -412,7 +412,7 @@ Helper function that returns a @racket[sound] using a curve function that linear
 
 @;; ----------------------------------------------------
 @defproc[(play-sound [sound sound?]) void?]{
-Queues the sound buffer to be played on one of 4 sound channels. If no sound channels are available then the sound will not be played.
+Queues the sound buffer to be played on one of 8 sound channels. If no sound channels are available then the sound will not be played.
 }
 
 

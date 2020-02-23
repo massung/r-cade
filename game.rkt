@@ -170,7 +170,7 @@ All rights reserved.
          [font (for/vector ([g basic-font]) g)]
 
          ; sound mixer
-         [sounds (create-sound-channels 4)]
+         [sounds (create-sound-channels 8)]
          [sound-queue null]
 
          ; music channel and riff pointer
