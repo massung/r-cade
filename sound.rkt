@@ -24,7 +24,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define sample-rate 4000)
-(define half-peak 32000)
+(define half-peak 24000)
 (define channels 1)
 (define bytes-per-sample 2)
 
