@@ -1,6 +1,7 @@
 #lang racket
 
 (require r-cade)
+(require racket/random)
 
 ;; ----------------------------------------------------
 
@@ -24,6 +25,15 @@
 
 ;; ----------------------------------------------------
 
+(define bush-sprite '(#x34 #x7e #xff #xff #x7e))
+
+;; ----------------------------------------------------
+
+(define berries-sprite #((#x00 #x20 #x04 #x10)
+                         (#x00 #x14 #x40 #x08)))
+
+;; ----------------------------------------------------
+   
 (define ribbon-sprite '(#x3c #x7e #xff #xff #xff #xff #x7e #x3c #x18 #x3c #x3c #x66 #x66 #x66 #x66))
 
 ;; ----------------------------------------------------
@@ -38,6 +48,10 @@
 ;; ----------------------------------------------------
 
 (define clop-sound (tone 50 0.05 (voice square-wave (envelope 0 0.2 0.15 0))))
+
+;; ----------------------------------------------------
+
+(define gun-sound (tone 600 1 (voice (synth (triangle-wave 0.7) (noise-wave 0.4)) z-envelope)))
 
 ;; ----------------------------------------------------
 
@@ -61,15 +75,21 @@
 
 ;; ----------------------------------------------------
 
+(struct bush [x berries color])
+
+;; ----------------------------------------------------
+
 (define player #f)
 (define recover-timer 0)
 (define horses null)
-(define start-x -16)
+(define bushes null)
+(define start-x -36)
 (define start-vel 16)
 (define start-fps 10)
 (define finish-line 640)
 (define score 0)
 (define ribbons null)
+(define race-started #f)
 
 ;; ----------------------------------------------------
 
@@ -102,6 +122,16 @@
   (let ([x (+ (- (* finish-line 4) (track-offset)) 4)])
     (color 8)
     (rect x 26 0 77)))
+
+;; ----------------------------------------------------
+
+(define (draw-bushes)
+  (for ([b bushes])
+    (let ([x (+ (- (* (bush-x b) 4) (track-offset)) 4)])
+      (color 11)
+      (draw x 12 bush-sprite)
+      (color (bush-color b))
+      (draw x 12 (bush-berries b)))))
 
 ;; ----------------------------------------------------
 
@@ -173,7 +203,9 @@
 
 (define (draw-place)
   (color 7)
-  (text (- (width) 12) 1 (vector-ref positions (horse-position player))))
+  (text (- (width) 12) 1 (if (not race-started)
+                             "-"
+                             (vector-ref positions (horse-position player)))))
 
 ;; ----------------------------------------------------
 
@@ -214,8 +246,8 @@
   
   ; slow down horse
   (let ([decay (* (frametime) (if (eq? h player) 0.7 (random)))])
-    (set-horse-fps! h (max (- (horse-fps h) decay) 5))
-    (set-horse-vel! h (max (- (horse-vel h) decay) 16))))
+    (set-horse-fps! h (max (- (horse-fps h) decay) start-fps))
+    (set-horse-vel! h (max (- (horse-vel h) decay) start-vel))))
 
 ;; ----------------------------------------------------
 
@@ -245,12 +277,23 @@
 
 ;; ----------------------------------------------------
 
+(define (spawn-bushes [offset (random 10)])
+  (if (> offset (+ finish-line (width)))
+      null
+      (let ([berries (random-ref berries-sprite)])
+        (cons (bush offset berries (vector-ref #(8 12 14 10) (random 4)))
+              (spawn-bushes (+ offset (random 10) 4))))))
+
+;; ----------------------------------------------------
+
 (define (next-race)
   (cls)
   (play-music call-to-post #:loop #f)
 
   ; ready the next level...
+  (set! race-started #f)
   (set! player (spawn-horse 9 10 8))
+  (set! bushes (spawn-bushes))
   (set! horses (for/list ([lane (range 8)]
                           [color (list 1 4 6 8 10 12 13 14)]
                           [jockey (list 12 9 1 14 0 5 7 2)])
@@ -307,6 +350,7 @@
 
 (define (game-loop)
   (draw-track)
+  (draw-bushes)
   (draw-railing)
   (draw-finish-line)
   (draw-horses)
@@ -320,6 +364,12 @@
   ; hoof sounds
   (when (= (horse-anim-frame player) 1)
     (play-sound clop-sound))
+
+  ; gun sound
+  (unless race-started
+    (when (> (horse-x player) 32)
+      (play-sound gun-sound)
+      (set! race-started #t)))
 
   ; player controls
   (when (> finish-line (horse-x player) 32)
@@ -339,4 +389,5 @@
 
 ;; ----------------------------------------------------
 
-(run game-loop 180 112 #:init next-race #:scale 3 #:title "R-cade: Derby")
+(define (play)
+  (run game-loop 180 112 #:init next-race #:scale 3 #:title "R-cade: Derby"))
