@@ -107,6 +107,33 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define (draw-ex x y sprite)
+  (for ([word sprite] [i (range y (height))] #:when (>= i 0))
+    (let* ([b0 (bitwise-bit-field word 8 16)]
+           [b1 (bitwise-bit-field word 0 8)]
+
+           ; position vectors
+           [p0 (make-sfVector2f (real->single-flonum (round x))
+                                (real->single-flonum (round i)))]
+           [p1 (make-sfVector2f (real->single-flonum (round (+ x 8)))
+                                (real->single-flonum (round i)))]
+
+           ; bitmask scanlines
+           [r0 (vector-ref bitmask-rects b0)]
+           [r1 (vector-ref bitmask-rects b1)])
+
+      ; render byte 0
+      (sfSprite_setTextureRect bitmask-sprite r0)
+      (sfSprite_setPosition bitmask-sprite p0)
+      (sfRenderTexture_drawSprite (texture) bitmask-sprite #f)
+
+      ; render byte 1
+      (sfSprite_setTextureRect bitmask-sprite r1)
+      (sfSprite_setPosition bitmask-sprite p1)
+      (sfRenderTexture_drawSprite (texture) bitmask-sprite #f))))
+
+;; ----------------------------------------------------
+
 (define (text x y s #:bg [bg #f])
   (for ([i (range x (width) 4)] [ch (~a s)])
     (let ([n (char->integer ch)])

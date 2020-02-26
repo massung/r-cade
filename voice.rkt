@@ -111,3 +111,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define trough-envelope (envelope 1 0 1))
+
+;; ----------------------------------------------------
+
+(define adsr-envelope (envelope 0 1 0.7 0.7 0))

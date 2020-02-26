@@ -203,18 +203,20 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define adsr (envelope 0.0 1.0 0.7 0.7 0.0))
-
-;; ----------------------------------------------------
-
 (define dt-per-sample (/ sample-rate))
 
 ;; ----------------------------------------------------
 
-(define (music tune #:tempo [bpm 160] #:instrument [instrument sin])
+(define basic-note (voice sin adsr-envelope))
+
+;; ----------------------------------------------------
+
+(define (music tune #:tempo [bpm 160] #:voice [voice basic-note])
   (let* ([notes (parse-notes bpm tune)]
          [num-samples (for/sum ([n notes]) (note-length n))]
-         [samples (make-u8vector (* num-samples bytes-per-sample))])
+         [samples (make-u8vector (* num-samples bytes-per-sample))]
+         [instrument (voice-instrument voice)]
+         [envelope (voice-envelope voice)])
     (for/fold ([offset 0] [last-octave "4"])
               ([note notes])
       (let* ([key (note-key note)]
@@ -233,7 +235,7 @@ All rights reserved.
 
                  ; amplitude and volume
                  [amp (instrument (* t freq pi 2))]
-                 [vol (adsr u)]
+                 [vol (envelope u)]
 
                  ; wave sample
                  [sample (inexact->exact (round (* half-peak vol amp)))]
