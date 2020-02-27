@@ -62,6 +62,7 @@ All rights reserved.
  color
  set-color!
  draw
+ draw-ex
  text
  line
  rect
@@ -84,12 +85,14 @@ All rights reserved.
  s-envelope
  peak-envelope
  trough-envelope
+ adsr-envelope
 
  ; audio
  music
  sound
  tone
  sweep
+ basic-note
  play-sound
  stop-sound
  sound-volume

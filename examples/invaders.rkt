@@ -27,8 +27,8 @@
 
 ;; ----------------------------------------------------
 
-(define barrier-sprites '((#x00 #x7f #xff #xff #xff #xff #xff #xc0)
-                          (#x00 #xfe #xff #xff #xff #xff #xff #x03)))
+(define barrier-sprites '((#x00 #x00 #x7f #xff #xff #xff #xff #xff #xc0)
+                          (#x00 #x00 #xfe #xff #xff #xff #xff #xff #x03)))
 
 ;; ----------------------------------------------------
 
@@ -81,7 +81,7 @@
 ;; ----------------------------------------------------
 
 (define barriers null)
-(define barrier-y 100)
+(define barrier-y 98)
 
 ;; ----------------------------------------------------
 
@@ -277,7 +277,7 @@
         (let ([bx (barrier-x b)])
 
           ; is the missile within the x-boundary of the barrier?
-          (when (<= bx mx (+ bx 7))
+          (when (<= (- bx 3) mx (+ bx 7))
             (let ([barrier-bits (barrier-sprite b)])
               (for ([missile-bits (missile-sprite m)]
 

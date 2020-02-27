@@ -215,6 +215,12 @@ The above would draw a 3x3 sprite that looks like a + sign to the pixels at (10,
 
 
 @;; ----------------------------------------------------
+@defproc[(draw-ex [x real?] [y real?] [sprite (listof integer?)]) void?]{
+This is exactly the same as @racket[draw], except that the sprite is considered to be 16-bits wide. The most significant byte of each scanline is rendered first, followed by the least significant byte.
+}
+
+
+@;; ----------------------------------------------------
 @defproc[(text [x real?] [y real?] [s any]) void?]{Draw the value @racket[s] at (@racket[x],@racket[y]) using the current font. The default font is a fixed-width, ASCII font with character range [@tt{#x20},@tt{#x7f}]. Each character is 3x6 pixels in size.}
 
 
@@ -269,6 +275,7 @@ The @racket[envelope] function is used to set the volume of a sound over the dur
  @item{@racket[s-envelope]}
  @item{@racket[peak-envelope]}
  @item{@racket[trough-envelope]}
+ @item{@racket[adsr-envelope]}
 ]
 
 There is also an @racket[envelope] function that helps with the creation of your own envelopes.
@@ -374,6 +381,10 @@ This means that in the time range of [@tt{0.0}, @racket[0.33]] the sound will pl
 
 
 @;; ----------------------------------------------------
+@defthing[adsr-envelope procedure? #:value (envelope 0 1 0.7 0.7 0)]{An envelope function that may be passed as an envelope. This is the default enevelope used for musical notes.}
+
+
+@;; ----------------------------------------------------
 @section{Sound}
 
 All audio is played by composing 16-bit PCM WAV data using a @racket[voice]. Audio data that can be played is created using the @racket[sound] and @racket[music] functions.
@@ -433,7 +444,7 @@ Music is created by parsing notes and creating an individual waveform for each n
 @;; ----------------------------------------------------
 @defproc[(music [notes string?]
                 [#:tempo beats-per-minute exact-nonnegative-integer? 160]
-                [#:instrument wave-function procedure? sin]) music?]{
+                [#:voice voice? basic-note]) music?]{
 Parses the @racket[notes] string and builds a waveform for each note. Notes are in the format @tt{<key>[<octave>][<hold>]}. For example:
 
 @itemlist[
@@ -445,8 +456,12 @@ The default octave is 4, but once an octave is specified for a note then that be
 
 How long each note is held for (in seconds) is determined by the @racket[#:tempo] (beats per minute) parameter. A single beat is assumed to be a single quarter-note. So, with a little math, a @tt{"C#--"} at a rate of 160 BPM would play for 1.125 seconds (3 beats * 60 s/m ÷ 160 bpm). It is not possible to specify 1/8th and 1/16th notes. In order to achieve them, increase the @racket[#:tempo] appropriately.
 
-All notes are played with an ADSR (attack, decay, sustain, release) envelope. This cannot be overridden.
+By default, the @racket[voice] used is the @racket[basic-note], which uses the @racket[adsr-envelope] function (ADSR stands for attack, decay, sustain, release). Unlike sounds, which use the envelope function across the entire sound, when generating music the envelope function is applied to each note. This is important to keep in mind if you decide to override the envelope with your own, as it's how each note can be distinguished from the next.
 }
+
+
+@;; ----------------------------------------------------
+@defthing[basic-note voice? #:value (voice sin adsr-envelope)]{The default @racket[voice] used to create music.}
 
 
 @;; ----------------------------------------------------

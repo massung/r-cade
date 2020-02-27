@@ -116,8 +116,4 @@ All rights reserved.
 (define (stop-music)
   (let ([chan (music-channel)])
     (when chan
-      (sfMusic_stop chan)
-      (sfMusic_destroy chan)
-
-      ; clear the channel
-      (music-channel #f))))
+      (sfMusic_stop chan))))
