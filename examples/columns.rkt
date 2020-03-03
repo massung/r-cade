@@ -140,7 +140,7 @@
 
 ;; ----------------------------------------------------
 
-(define drop-timer 0)
+(define drop-frame 0)
 (define multiplier 1)
 (define difficulty 1)
 (define score 0)
@@ -447,8 +447,8 @@
 
 ;; ----------------------------------------------------
 
-(define (time-to-drop)
-  (- 1.0 (* (level) 0.06)))
+(define (frame-to-drop)
+  (max 2 (- 20 (level))))
 
 ;; ----------------------------------------------------
 
@@ -517,7 +517,7 @@
                 [(1) 0]
                 [(2) 5000]
                 [(3) 10000]))
-  (set! drop-timer 0)
+  (set! drop-frame 0)
   (set! multiplier 1)
   (set! jewels 0)
   (set! danger-zone #f))
@@ -630,9 +630,9 @@
   (draw-game)
 
   ; drop the triplet
-  (set! drop-timer (+ drop-timer (frametime)))
-  (when (or (drop-action) (> drop-timer (time-to-drop)))
-    (set! drop-timer 0)
+  (set! drop-frame (+ drop-frame 1))
+  (when (or (drop-action) (> drop-frame (frame-to-drop)))
+    (set! drop-frame 0)
     (drop-triplet))
 
   ; swap music theme
