@@ -38,12 +38,15 @@
 
 ;; ----------------------------------------------------
 
+(define trumpet (synth (sin 1)
+                       (triangle-wave 0.2)
+                       (noise-wave 0.15)))
+
+;; ----------------------------------------------------
+
 (define call-to-post (music "A3---D4---F---A---A-A--F---F-F---D---F---D---A3---------------"
                             #:tempo 900
-                            #:voice (voice (synth (sin 1)
-                                                  (triangle-wave 0.2)
-                                                  (noise-wave 0.15))
-                                           (envelope 0 1 0.7 0.7 0.2 0.8 0.2 0.8 0))))
+                            #:voice (voice trumpet (envelope 0 1 0.7 0.7 0.2 0.8 0.2 0.8 0))))
 
 ;; ----------------------------------------------------
 
@@ -245,7 +248,11 @@
   (set-horse-time! h (+ (horse-time h) (frametime)))
   
   ; slow down horse
-  (let ([decay (* (frametime) (if (eq? h player) 0.7 (random)))])
+  (let ([decay (* (frametime) (if (eq? h player)
+                                  0.75
+                                  (- 0.90
+                                     (* (random) 0.2)
+                                     (* (length ribbons) 0.01))))])
     (set-horse-fps! h (max (- (horse-fps h) decay) start-fps))
     (set-horse-vel! h (max (- (horse-vel h) decay) start-vel))))
 
@@ -261,7 +268,7 @@
             [m (horse-min-stamina h)]
             [a (horse-aggro h)])
         (if (or (and (> r 0.0) (> (horse-stamina h) m) (> (horse-time h) a))
-                (and (= r 0.0) (> (horse-stamina h) (/ (- 100 m) 2))))
+                (and (= r 0.0) (> (horse-stamina h) (- 100 m))))
             (use-crop h)
             (recover-stamina h)))))
   (advance-horse player))
