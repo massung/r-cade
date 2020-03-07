@@ -169,7 +169,7 @@
 
    ; all verticals
    (for*/list ([x (range 6)]
-               [y (range 11)])
+               [y (range 14)])
      (list (list x y) (list x (+ y 1)) (list x (+ y 2))))
 
    ; all top-left -> bottom-right diagonals
@@ -637,9 +637,9 @@
 
   ; swap music theme
   (set! danger-zone (cond
-                      [(and danger-zone (< (max-height) 8))
+                      [(and danger-zone (< (max-height) 7))
                        (begin0 #f (play-music theme))]
-                      [(and (not danger-zone) (> (max-height) 8))
+                      [(and (not danger-zone) (> (max-height) 7))
                        (begin0 #t (play-music warning-theme))]
                       [else danger-zone]))
 
