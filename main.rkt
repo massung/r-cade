@@ -30,8 +30,10 @@ All rights reserved.
 
  ; game
  define-action
+ define-timer
  run
  quit
+ goto
  wait
  sync
  frame

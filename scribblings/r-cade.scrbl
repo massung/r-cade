@@ -51,6 +51,10 @@ The @racket[window-title] parameter is the title given to the window created.
 
 
 @;; ----------------------------------------------------
+@defproc[(goto [game-loop procedure?]) void?]{Changes the game loop function to @racket[game-loop]. This doesn't take affect until the next frame. This function is used to change between various game states. For example, you might have a @tt{start-screen} game state, a @tt{main-game} state, and a @tt{pause-game} state that are switched between.}
+
+
+@;; ----------------------------------------------------
 @defproc[(wait [until procedure? btn-any]) void?]{Hard stops the game loop and waits until either the window is closed or the until function returns true. While waiting, events are still processed.}
 
 

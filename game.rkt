@@ -47,6 +47,13 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define game-loop (make-parameter (λ ()
+                                    (cls)
+                                    (when (btn-quit)
+                                      (quit)))))
+
+;; ----------------------------------------------------
+
 (define-syntax define-action
   (syntax-rules ()
     [(_ name btn)
@@ -57,6 +64,28 @@ All rights reserved.
      (define (name)
        (let ([rate (floor (/ (framerate) rep))])
          (and (btn) (= (remainder (btn) rate) 1))))]))
+
+;; ----------------------------------------------------
+
+(define-syntax define-timer
+  (syntax-rules ()
+    [(_ name time)
+     (define name
+       (let ([timer time])
+         (λ ([reset #f] #:dilation [m 1])
+           (match reset
+             [#t (set! timer time)]
+
+             ; normal countdown
+             [#f (let ([expired (<= timer 0)])
+                   (begin0 expired
+                           (set! timer (if expired
+                                           time
+                                           (- time (* (frametime) m))))))]
+
+             ; change the timer and reset it
+             [nt (set! time nt)
+                 (set! timer time)]))))]))
 
 ;; ----------------------------------------------------
 
@@ -88,6 +117,11 @@ All rights reserved.
          (on-mouse-clicked (sfEvent-mouseButton event)))
         ('sfEvtMouseButtonReleased
          (on-mouse-released (sfEvent-mouseButton event)))))))
+
+;; ----------------------------------------------------
+
+(define (goto update)
+  (game-loop update))
   
 ;; ----------------------------------------------------
 
@@ -132,7 +166,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (run game-loop
+(define (run initial-game-loop
              pixels-wide
              pixels-high
              #:init [init #f]
@@ -195,7 +229,10 @@ All rights reserved.
          ; delta frame time, total game time, and framerate clock
          [frametime 0.0]
          [gametime 0.0]
-         [frameclock (sfClock_create)])
+         [frameclock (sfClock_create)]
+
+         ; initial game state loop
+         [game-loop initial-game-loop])
 
       ; attempt to close the windw on shutdown (or re-run)
       (let ([v (register-custodian-shutdown (window)
@@ -224,7 +261,9 @@ All rights reserved.
                                   (displayln e)
                                   (quit))])
             (sync)
-            (game-loop)))
+
+            ; execute the game loop
+            ((game-loop))))
 
         ; clean-up shutdown registration
         (unregister-custodian-shutdown (window) v))
