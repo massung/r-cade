@@ -1,7 +1,7 @@
 #lang info
 
 (define collection "r-cade")
-(define version "0.3.0")
+(define version "0.3.1")
 (define pkg-authors '("massung@gmail.com"))
 (define pkg-desc "R-cade game engine")
 (define deps '("base" "csfml"))
