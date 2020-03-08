@@ -48,7 +48,7 @@ for their hard work!!
                  "    float mask = 1.0 - float(whichMask < 0.5) * 0.3;"
                  ""
                  "    vec2 invSize = 1.0 / textureSize.xy;"
-                 "    vec2 texCoordInPixels = gl_TexCoord[0] * textureSize;"
+                 "    vec2 texCoordInPixels = gl_TexCoord[0].xy * textureSize;"
                  "    vec2 centerCoord = floor(texCoordInPixels.xy) + vec2(0.5, 0.5);"
                  "    vec2 distFromCenter = abs(centerCoord - texCoordInPixels);"
                  ""
