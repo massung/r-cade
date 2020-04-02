@@ -160,8 +160,12 @@ All rights reserved.
          [screen-h (sfVideoMode-height mode)]
 
          ; scale to fit ~60% of the screen
-         [scale-x (quotient (* screen-w 0.6) w)]
-         [scale-y (quotient (* screen-h 0.6) h)])
+         [max-w (inexact->exact (floor (* screen-w 0.6)))]
+         [max-h (inexact->exact (floor (* screen-h 0.6)))]
+
+         ; scale to fit ~60% of the screen
+         [scale-x (quotient max-w w)]
+         [scale-y (quotient max-h h)])
     (inexact->exact (max (min scale-x scale-y) 1))))
 
 ;; ----------------------------------------------------
