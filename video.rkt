@@ -50,8 +50,8 @@ All rights reserved.
   (let ([view (sfRenderWindow_getView (window))]
 
         ; new size from event
-        [w (real->single-flonum (sfSizeEvent-width event))]
-        [h (real->single-flonum (sfSizeEvent-height event))])
+        [w (real->double-flonum (sfSizeEvent-width event))]
+        [h (real->double-flonum (sfSizeEvent-height event))])
 
     ; update the view to ensure the sprite is centered
     (sfView_setSize view (make-sfVector2f w h))
@@ -71,8 +71,8 @@ All rights reserved.
          [h (sfVector2u-y size)]
 
          ; scale factor for each axis
-         [sx (real->single-flonum (/ w (width)))]
-         [sy (real->single-flonum (/ h (height)))]
+         [sx (real->double-flonum (/ w (width)))]
+         [sy (real->double-flonum (/ h (height)))]
 
          ; square scaling factor
          [base (min sx sy)]

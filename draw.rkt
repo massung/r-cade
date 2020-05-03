@@ -76,8 +76,8 @@ All rights reserved.
     (set-sfVertex-color! v c)
 
     ; update the x/y coordinate
-    (set-sfVector2f-x! (sfVertex-position v) (real->single-flonum x))
-    (set-sfVector2f-y! (sfVertex-position v) (real->single-flonum y))))
+    (set-sfVector2f-x! (sfVertex-position v) (real->double-flonum x))
+    (set-sfVector2f-y! (sfVertex-position v) (real->double-flonum y))))
 
 ;; ----------------------------------------------------
 
@@ -94,8 +94,8 @@ All rights reserved.
 
 (define (draw x y sprite)
   (for ([byte sprite] [i (range y (height))] #:when (>= i 0))
-    (let ([p (make-sfVector2f (real->single-flonum (round x))
-                              (real->single-flonum (round i)))]
+    (let ([p (make-sfVector2f (real->double-flonum (round x))
+                              (real->double-flonum (round i)))]
 
           ; bitmask scanline
           [r (vector-ref bitmask-rects (bitwise-and byte #xff))])
@@ -113,10 +113,10 @@ All rights reserved.
            [b1 (bitwise-bit-field word 0 8)]
 
            ; position vectors
-           [p0 (make-sfVector2f (real->single-flonum (round x))
-                                (real->single-flonum (round i)))]
-           [p1 (make-sfVector2f (real->single-flonum (round (+ x 8)))
-                                (real->single-flonum (round i)))]
+           [p0 (make-sfVector2f (real->double-flonum (round x))
+                                (real->double-flonum (round i)))]
+           [p1 (make-sfVector2f (real->double-flonum (round (+ x 8)))
+                                (real->double-flonum (round i)))]
 
            ; bitmask scanlines
            [r0 (vector-ref bitmask-rects b0)]
@@ -154,10 +154,10 @@ All rights reserved.
 
 (define (rect x y w h #:fill [fill #f])
   (let ([c (sfSprite_getColor bitmask-sprite)]
-        [p (make-sfVector2f (real->single-flonum x)
-                            (real->single-flonum y))]
-        [s (make-sfVector2f (real->single-flonum w)
-                            (real->single-flonum h))])
+        [p (make-sfVector2f (real->double-flonum x)
+                            (real->double-flonum y))]
+        [s (make-sfVector2f (real->double-flonum w)
+                            (real->double-flonum h))])
     (sfRectangleShape_setSize rect-shape s)
     (sfRectangleShape_setPosition rect-shape p)
     (sfRectangleShape_setOutlineColor rect-shape (if fill sfTransparent c))
@@ -171,9 +171,9 @@ All rights reserved.
 
 (define (circle x y r #:fill [fill #f])
   (let ([c (sfSprite_getColor bitmask-sprite)]
-        [p (make-sfVector2f (real->single-flonum (- x r))
-                            (real->single-flonum (- y r)))])
-    (sfCircleShape_setRadius circle-shape (real->single-flonum r))
+        [p (make-sfVector2f (real->double-flonum (- x r))
+                            (real->double-flonum (- y r)))])
+    (sfCircleShape_setRadius circle-shape (real->double-flonum r))
     (sfCircleShape_setPosition circle-shape p)
     (sfCircleShape_setOutlineColor circle-shape (if fill sfTransparent c))
     (sfCircleShape_setOutlineThickness circle-shape 1.0)
