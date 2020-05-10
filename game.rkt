@@ -203,9 +203,11 @@ All rights reserved.
                                             #f
                                             #f)]
 
-         ; default palette and font
+         ; default palette
          [palette (for/vector ([c basic-palette]) c)]
-         [font (for/vector ([g basic-font]) g)]
+
+         ; default font
+         [font basic-font]
 
          ; sound mixer
          [sounds (create-sound-channels 8)]
