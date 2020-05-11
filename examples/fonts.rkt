@@ -2,6 +2,8 @@
 
 (require r-cade)
 
+;; ----------------------------------------------------
+
 (define strings
   '("!\"#$%&'()*+,-./"
     "0123456789"
@@ -12,6 +14,8 @@
     "abcdefghijklm"
     "nopqrstuvwxyz"
     "{|}~"))
+
+;; ----------------------------------------------------
 
 (define (test-font)
   (cls)
@@ -27,4 +31,7 @@
   (for ([s strings] [y (in-naturals)])
     (text 1 (+ (* y (font-height)) 1) s)))
 
-(run test-font 128 90)
+;; ----------------------------------------------------
+
+(module+ main
+  (run test-font 128 90))

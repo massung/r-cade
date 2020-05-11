@@ -288,3 +288,8 @@
 
 (define (play)
   (run tetris 48 52 #:init new-game #:fps 30 #:title "R-cade: Tetris"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))

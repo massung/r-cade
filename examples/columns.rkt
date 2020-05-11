@@ -656,4 +656,10 @@
 
 ;; ----------------------------------------------------
 
-(run start-screen 100 137 #:init new-game #:fps 20 #:title "R-cade: Columns")
+(define (play)
+  (run start-screen 100 137 #:init new-game #:fps 20 #:title "R-cade: Columns"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))

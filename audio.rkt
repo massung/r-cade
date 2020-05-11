@@ -9,14 +9,14 @@ All rights reserved.
 
 |#
 
-(require ffi/vector)
+(require ffi/cvector)
 (require csfml)
 
 ;; ----------------------------------------------------
 
 (require "voice.rkt")
+(require "riff.rkt")
 (require "sound.rkt")
-(require "music.rkt")
 
 ;; ----------------------------------------------------
 
@@ -57,8 +57,8 @@ All rights reserved.
 (define (play-queued-sounds)
   (for ([buf (remove-duplicates (sound-queue) eq?)])
     (with-sound (λ (sound)
-                (sfSound_setBuffer sound buf)
-                (sfSound_play sound)))
+                  (sfSound_setBuffer sound buf)
+                  (sfSound_play sound)))
 
     ; empty queue
     (sound-queue null)))
@@ -94,9 +94,10 @@ All rights reserved.
   (stop-music)
 
   ; ensure the music to play is a riff
-  (when (music? riff)
-    (let* ([len (u8vector-length riff)]
-           [chan (sfMusic_createFromMemory riff len)])
+  (when (riff? riff)
+    (let* ([ptr (riff-ptr riff)]
+           [len (riff-length riff)]
+           [chan (sfMusic_createFromMemory ptr len)])
       (sfMusic_setLoop chan loop)
       (sfMusic_play chan)
       

@@ -169,3 +169,8 @@
 
 (define (play)
   (run (new-game) 256 128 #:title "Shooter"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))

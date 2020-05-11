@@ -9,7 +9,6 @@ All rights reserved.
 
 |#
 
-(require ffi/vector)
 (require racket/match)
 (require csfml)
 
@@ -214,7 +213,7 @@ All rights reserved.
 (define (music tune #:tempo [bpm 160] #:voice [voice basic-note])
   (let* ([notes (parse-notes bpm tune)]
          [num-samples (for/sum ([n notes]) (note-length n))]
-         [samples (make-u8vector (* num-samples bytes-per-sample))]
+         [samples (make-vector (* num-samples bytes-per-sample))]
          [instrument (voice-instrument voice)]
          [envelope (voice-envelope voice)])
     (for/fold ([offset 0] [last-octave "4"])
@@ -241,27 +240,30 @@ All rights reserved.
                  [sample (inexact->exact (round (* half-peak vol amp)))]
 
                  ; bytes of sample
-                 [b0 (bitwise-and sample #xff)]
-                 [b1 (bitwise-and (arithmetic-shift sample -8) #xff)])
-            (u8vector-set! samples (* (+ offset n) 2) b0)
-            (u8vector-set! samples (+ (* (+ offset n) 2) 1) b1)))
+                 [b0 (bitwise-bit-field sample 0 8)]
+                 [b1 (bitwise-bit-field sample 8 16)])
+            (vector-set! samples (* (+ offset n) 2) b0)
+            (vector-set! samples (+ (* (+ offset n) 2) 1) b1)))
 
         ; update loop state
         (values (+ offset len) octave)))
 
-      ; compile the riff
+    ; compile the riff
     (make-riff samples sample-rate channels bytes-per-sample)))
 
 ;; ----------------------------------------------------
 
 (define music? riff?)
 
-#|
-(define (write-music tune #:bpm bpm)
-  (let* ([tune (music tune sin #:tempo bpm)])
-    (with-output-to-file "music.wav"
+;; ----------------------------------------------------
+
+(define (write-music tune #:tempo bpm #:voice voice)
+  (let* ([tune (music tune #:tempo bpm #:voice voice)])
+    (with-output-to-file "test-music.wav"
       (λ () (write-bytes tune))
       #:exists 'replace)))
 
-(define (test) (write-music "E4-B3C4D" #:bpm 280))
-|#
+(define (test)
+ (write-music ".--E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-.E4---C---D---B3---C4---A3---Ab---B-E4---C---D---B3--C4--E-A4--Ab---.E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-"
+              #:tempo 280
+              #:voice (voice triangle-wave adsr-envelope)))

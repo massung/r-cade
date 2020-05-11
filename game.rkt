@@ -170,6 +170,12 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define (handle-exn exn)
+  ((error-display-handler) "ERROR" exn)
+  (quit))
+
+;; ----------------------------------------------------
+
 (define (run initial-game-loop
              pixels-wide
              pixels-high
@@ -263,9 +269,7 @@ All rights reserved.
         
         ; main game loop
         (do () [(not (sfRenderWindow_isOpen (window)))]
-          (with-handlers ([exn? (λ (e)
-                                  (displayln e)
-                                  (quit))])
+          (with-handlers ([exn? handle-exn])
             (sync)
 
             ; execute the game loop

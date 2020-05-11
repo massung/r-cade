@@ -22,13 +22,12 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (make-font width sprites)
-  (font-info width (for/vector
-                       ([sprite sprites]) sprite)))
+(define font (make-parameter #f))
 
 ;; ----------------------------------------------------
 
-(define font (make-parameter #f))
+(define (make-font width sprites)
+  (font-info width (for/vector ([sprite sprites]) sprite)))
 
 ;; ----------------------------------------------------
 
@@ -43,9 +42,10 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (font-sprite char)
-  (let ([n (char->integer char)])
-    (and (<= 33 n 127)
-         (vector-ref (font-info-glyphs (font)) (- n 33)))))
+  (let ([n (- (char->integer char) 33)]
+        [sprites (font-info-glyphs (font))])
+    (and (< -1 n (vector-length sprites))
+         (vector-ref sprites n))))
 
 ;; ----------------------------------------------------
 
@@ -193,7 +193,7 @@ All rights reserved.
                  (#x88 #x90 #xa0 #xc0 #xa0 #x90 #x88 #x00)    ; K
                  (#x80 #x80 #x80 #x80 #x80 #x80 #xf8 #x00)    ; L
                  (#x88 #xd8 #xa8 #x88 #x88 #x88 #x88 #x00)    ; M
-                 (#x88 #x88 #xc8 #xa8 #x98 #x88 #x88 #x00)    ; N
+                 (#x88 #xc8 #xa8 #x98 #x88 #x88 #x88 #x00)    ; N
                  (#x70 #x88 #x88 #x88 #x88 #x88 #x70 #x00)    ; O
                  (#xf0 #x88 #x88 #xf0 #x80 #x80 #x80 #x00)    ; P
                  (#x70 #x88 #x88 #x88 #xa8 #x98 #x78 #x00)    ; Q

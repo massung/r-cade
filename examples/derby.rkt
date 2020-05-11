@@ -398,3 +398,9 @@
 
 (define (play)
   (run game-loop 180 112 #:init next-race #:scale 3 #:title "R-cade: Derby"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))
+

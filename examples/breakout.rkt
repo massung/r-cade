@@ -233,3 +233,8 @@
 (define (play)
   (setup)
   (run breakout 128 128 #:title "R-cade: Breakout"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))
