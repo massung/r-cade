@@ -170,13 +170,6 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (handle-exn exn)
-  (displayln exn)
-  ((error-display-handler) "ERROR" exn)
-  (quit))
-
-;; ----------------------------------------------------
-
 (define (run initial-game-loop
              pixels-wide
              pixels-high
