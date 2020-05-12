@@ -72,10 +72,11 @@ All rights reserved.
  circle
 
  ; font
- font
- font-width
- font-height
  make-font
+ font
+ font-sprite
+ font-advance
+ font-height
  basic-font
  tall-font
  wide-font

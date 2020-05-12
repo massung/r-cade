@@ -250,6 +250,65 @@ Draw a circle with its center at (@racket[x],@racket[y]) and radius @racket[r] u
 
 
 @;; ----------------------------------------------------
+@section{Fonts}
+
+There are three built-in fonts and it's possible to create your own and use them as well.
+
+
+@;; ----------------------------------------------------
+@defproc[(make-font [sprites (vectorof (listof byte?))]
+                    [#:advance width exact-nonnegative-integer? 8]
+                    [#:base base exact-nonnegative-integer? 33]) font?]{
+Define a new font that can be set with the @racket[font] function and rendered with @racket[text].
+
+The @racket[width] parameter is the pixel width of each character sprite. The @racket[base] parameter is the ordinal value of the first ASCII character in the font (typically this is @racket[33], the @racket[#\!] character). Any character drawn that isn't in the font is drawn as a space.
+}
+
+
+@;; ----------------------------------------------------
+@defproc[(font [font font?]) void?]{
+Sets the current @racket[font] to draw characters with when using the @racket[text] function.
+}
+
+
+@;; ----------------------------------------------------
+@defproc[(font-sprite [char char?]) (or/c (listof byte?) #f)]{
+Returns the sprite in the current @racket[font] for @racket[char] or @racket[#f] if no sprite exists for it.
+}
+
+
+@;; ----------------------------------------------------
+@defproc[(font-advance) exact-nonnegative-integer?]{
+Returns the cursor x advance value in pixels for the current @racket[font]. This is always the width of the font plus 1 pixel.
+}
+
+
+@;; ----------------------------------------------------
+@defproc[(font-height) exact-nonnegative-integer?]{
+Returns the line height in pixels for the current @racket[font]. The line height is always the number of scanlines of the first character sprite in the font plus 1 pixel.
+}
+
+
+@;; ----------------------------------------------------
+@defthing[basic-font font?]{
+The default font of 3x6 character sprites.
+}
+
+
+@;; ----------------------------------------------------
+@defthing[tall-font font?]{
+A font of 5x8 character sprites.
+}
+
+
+@;; ----------------------------------------------------
+@defthing[wide-font font?]{
+A font of 7x8 character sprites.
+}
+
+
+
+@;; ----------------------------------------------------
 @section{Voices}
 
 All sounds (and music) are played using voices. A voice is both an "instrument" (wave function) and an "envelope" (volume function).

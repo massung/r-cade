@@ -18,9 +18,9 @@ All rights reserved.
 (require "video.rkt")
 (require "shader.rkt")
 (require "input.rkt")
+(require "font.rkt")
 (require "draw.rkt")
 (require "palette.rkt")
-(require "font.rkt")
 (require "audio.rkt")
 (require "sound.rkt")
 
@@ -171,6 +171,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (handle-exn exn)
+  (displayln exn)
   ((error-display-handler) "ERROR" exn)
   (quit))
 

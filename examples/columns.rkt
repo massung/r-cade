@@ -553,6 +553,7 @@
   ; UI
   (let-values ([(x y) (board-pixel 7 6)])
     (color 0)
+    (font basic-font)
     (text x (+ y 1) "SCORE")
     (text x (+ y 21) "LEVEL")
     (text x (+ y 41) "JEWELS")
@@ -595,21 +596,24 @@
             (draw-ribbon)
 
             ; show the game title
-            (let ([x (remainder (frame) (+ (width) 28))])
+            (let ([x (remainder (frame) (+ (width) 56))])
               (color (+ 8 (remainder (frame) 8)))
-              (text (- x 28) 40 "COLUMNS")
+              (font wide-font)
+              (text (- x 56) 40 "COLUMNS")
               (text (- (width) x) 40 "COLUMNS"))
 
             ; show the difficulties
             (color 7)
-            (text 30 62 (format "~a Easy" (if (= difficulty 1) "*" " ")))
-            (text 30 70 (format "~a Medium" (if (= difficulty 2) "*" " ")))
-            (text 30 78 (format "~a Hard" (if (= difficulty 3) "*" " ")))
+            (font basic-font)
+            (text 34 62 (format "~a Easy" (if (= difficulty 1) "*" " ")))
+            (text 34 70 (format "~a Medium" (if (= difficulty 2) "*" " ")))
+            (text 34 78 (format "~a Hard" (if (= difficulty 3) "*" " ")))
 
             ; show the PRESS START command
             (when (< (remainder (frame) 10) 5)
               (color 7)
-              (text 30 96 "Press START"))
+              (font tall-font)
+              (text 18 96 "Press START"))
 
             ; select difficulty
             (when (or (eq? (btn-down) 1)

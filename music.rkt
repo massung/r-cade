@@ -253,10 +253,6 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define music? riff?)
-
-;; ----------------------------------------------------
-
 (define (write-music tune #:tempo bpm #:voice voice)
   (let* ([tune (music tune #:tempo bpm #:voice voice)])
     (with-output-to-file "test-music.wav"

@@ -134,8 +134,8 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (text x y s #:bg [bg #f])
-  (for ([i (range x (width) (font-width))] [c (~a s)])
+(define (text x y s)
+  (for ([i (range x (width) (font-advance))] [c (~a s)])
     (let ([sprite (font-sprite c)])
       (when sprite
         (draw i y sprite)))))
