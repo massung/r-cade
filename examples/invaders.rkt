@@ -421,4 +421,10 @@
 
 ;; ----------------------------------------------------
 
-(run game-loop 160 128 #:init new-game #:title "R-cade: Invaders")
+(define (play)
+  (run game-loop 160 128 #:init new-game #:title "R-cade: Invaders"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))

@@ -49,3 +49,8 @@
 
 (define (play)
   (run game-loop 128 128 #:init start #:fps 20))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))

@@ -18,9 +18,9 @@ All rights reserved.
 (require "video.rkt")
 (require "shader.rkt")
 (require "input.rkt")
+(require "font.rkt")
 (require "draw.rkt")
 (require "palette.rkt")
-(require "font.rkt")
 (require "audio.rkt")
 (require "sound.rkt")
 
@@ -203,9 +203,11 @@ All rights reserved.
                                             #f
                                             #f)]
 
-         ; default palette and font
+         ; default palette
          [palette (for/vector ([c basic-palette]) c)]
-         [font (for/vector ([g basic-font]) g)]
+
+         ; default font
+         [font basic-font]
 
          ; sound mixer
          [sounds (create-sound-channels 8)]
@@ -244,34 +246,35 @@ All rights reserved.
                                               (when w
                                                 (sfRenderWindow_close w)))
                                             #:at-exit? #t)])
-        
-        ; optionally allow for an init function
-        (when init
-          (init))
-        
-        ; defaults
-        (cls)
-        (color 7)
-        
-        ; set shader uniforms
-        (when (shader)
-          (let ([size (make-sfGlslVec2 (exact->inexact (width))
-                                       (exact->inexact (height)))])
-            (sfShader_setVec2Uniform (shader) "textureSize" size)))
-        
-        ; main game loop
-        (do () [(not (sfRenderWindow_isOpen (window)))]
-          (with-handlers ([exn? (λ (e)
-                                  (displayln e)
-                                  (quit))])
-            (sync)
+        (dynamic-wind
 
-            ; execute the game loop
-            ((game-loop))))
+         ; initialization
+         (λ ()
+           (when init
+             (init))
 
-        ; clean-up shutdown registration
-        (unregister-custodian-shutdown (window) v))
+           ; defaults
+           (cls)
+           (color 7)
 
-      ; stop playing sounds and music
-      (stop-music)
-      (stop-sound))))
+           ; set shader uniforms
+           (when (shader)
+             (let ([size (make-sfGlslVec2 (exact->inexact (width))
+                                          (exact->inexact (height)))])
+               (sfShader_setVec2Uniform (shader) "textureSize" size))))
+        
+         ; main game loop
+         (λ ()
+           (do () [(not (sfRenderWindow_isOpen (window)))]
+             (sync)
+
+             ; execute the game loop
+             ((game-loop))))
+
+         ; clean-up
+         (λ ()
+           (unregister-custodian-shutdown (window) v)
+
+           ; stop playing sounds and music
+           (stop-music)
+           (stop-sound)))))))

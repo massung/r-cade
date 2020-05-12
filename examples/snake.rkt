@@ -203,3 +203,8 @@
 
 (define (play)
   (run (new-game) 128 128 #:title "R-cade: Snake"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))

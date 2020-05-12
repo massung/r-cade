@@ -9,8 +9,8 @@ All rights reserved.
 
 |#
 
+(require ffi/cvector)
 (require ffi/unsafe)
-(require ffi/vector)
 (require csfml)
 
 ;; ----------------------------------------------------
@@ -32,7 +32,7 @@ All rights reserved.
 
 (define (sound curve duration [voice basic-voice])
   (let* ([count (inexact->exact (ceiling (* duration sample-rate)))]
-         [samples (make-s16vector count)]
+         [samples (make-cvector _sint16 count)]
          [instrument (voice-instrument voice)]
          [envelope (voice-envelope voice)])
 
@@ -50,10 +50,10 @@ All rights reserved.
 
              ; calculate the sample
              [sample (* half-peak volume amp)])
-        (s16vector-set! samples n (inexact->exact (floor sample)))))
+        (cvector-set! samples n (inexact->exact (floor sample)))))
 
     ; create a sound buffer from the samples
-    (let ([ptr (s16vector->cpointer samples)])
+    (let ([ptr (cvector-ptr samples)])
       (sfSoundBuffer_createFromSamples ptr count 1 sample-rate))))
 
 ;; ----------------------------------------------------

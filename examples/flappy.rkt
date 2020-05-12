@@ -257,3 +257,8 @@
 
 (define (play)
   (run (new-game) 128 128 #:fps 30 #:title "R-cade: Flappy"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))

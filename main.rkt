@@ -18,6 +18,7 @@ All rights reserved.
 (require "game.rkt")
 (require "input.rkt")
 (require "palette.rkt")
+(require "font.rkt")
 (require "draw.rkt")
 (require "voice.rkt")
 (require "sound.rkt")
@@ -69,6 +70,16 @@ All rights reserved.
  line
  rect
  circle
+
+ ; font
+ make-font
+ font
+ font-sprite
+ font-advance
+ font-height
+ basic-font
+ tall-font
+ wide-font
 
  ; voice
  (struct-out voice)

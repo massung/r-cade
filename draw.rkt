@@ -134,11 +134,11 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (text x y s #:bg [bg #f])
-  (for ([i (range x (width) 4)] [ch (~a s)])
-    (let ([n (char->integer ch)])
-      (when (<= 33 n 127)
-        (draw i y (vector-ref (font) (- n 33)))))))
+(define (text x y s)
+  (for ([i (range x (width) (font-advance))] [c (~a s)])
+    (let ([sprite (font-sprite c)])
+      (when sprite
+        (draw i y sprite)))))
 
 ;; ----------------------------------------------------
 

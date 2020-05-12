@@ -447,3 +447,8 @@
 
 (define (play)
   (run game-loop 160 128 #:init new-game #:title "R-cade: Defender"))
+
+;; ----------------------------------------------------
+
+(module+ main
+  (play))
