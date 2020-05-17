@@ -154,9 +154,9 @@
   
 ;; ----------------------------------------------------
 
-(define-action move-left btn-left)
-(define-action move-right btn-right)
-(define-action reset-ball btn-start #t)
+(define move-left btn-left)
+(define move-right btn-right)
+(define reset-ball (action btn-start))
   
 ;; ----------------------------------------------------
 

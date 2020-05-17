@@ -225,10 +225,10 @@
 
 ;; ----------------------------------------------------
 
-(define-action spin-block btn-up 5)
-(define-action move-left btn-left 7)
-(define-action move-right btn-right 7)
-(define-action move-down btn-down)
+(define spin-block (action btn-up 5))
+(define move-left (action btn-left 7))
+(define move-right (action btn-right 7))
+(define move-down btn-down)
 
 ;; ----------------------------------------------------
 

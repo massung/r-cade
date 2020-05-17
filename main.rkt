@@ -30,8 +30,6 @@ All rights reserved.
 (provide
 
  ; game
- define-action
- define-timer
  run
  quit
  goto
@@ -42,6 +40,8 @@ All rights reserved.
  gametime
  width
  height
+ action
+ timer
 
  ; input
  btn-any

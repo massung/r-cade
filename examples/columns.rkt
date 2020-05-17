@@ -152,10 +152,10 @@
 
 ;; ----------------------------------------------------
 
-(define-action rotate-action btn-z 5)
-(define-action drop-action btn-down 10)
-(define-action left-action btn-left 5)
-(define-action right-action btn-right 5)
+(define rotate-action (action btn-z 5))
+(define drop-action (action btn-down 10))
+(define left-action (action btn-left 5))
+(define right-action (action btn-right 5))
 
 ;; ----------------------------------------------------
 

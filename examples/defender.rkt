@@ -47,7 +47,7 @@
 
 ;; ----------------------------------------------------
 
-(define-action launch-btn btn-mouse #t)
+(define launch-btn (action btn-mouse))
 
 ;; ----------------------------------------------------
 

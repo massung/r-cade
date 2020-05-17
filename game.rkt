@@ -54,38 +54,27 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define-syntax define-action
-  (syntax-rules ()
-    [(_ name btn)
-     (define (name) (btn))]
-    [(_ name btn #t)
-     (define (name) (eq? (btn) 1))]
-    [(_ name btn rep)
-     (define (name)
-       (let ([rate (floor (/ (framerate) rep))])
-         (and (btn) (= (remainder (btn) rate) 1))))]))
+(define (action btn [rate 0])
+  (if (<= rate 0)
+      (λ () (eq? (btn) 1))
+      (λ ()
+        (let ([n (floor (/ (framerate) rate))])
+          (and (btn) (= (remainder (btn) n) 1))))))
 
 ;; ----------------------------------------------------
 
-(define-syntax define-timer
-  (syntax-rules ()
-    [(_ name time)
-     (define name
-       (let ([timer time])
-         (λ ([reset #f] #:dilation [m 1])
-           (match reset
-             [#t (set! timer time)]
+(define (timer time #:loop [loop #f])
+  (let ([this time])
+    (λ (#:reset [reset #f])
+      (set! this (if reset time (- this (frametime))))
 
-             ; normal countdown
-             [#f (let ([expired (<= timer 0)])
-                   (begin0 expired
-                           (set! timer (if expired
-                                           time
-                                           (- time (* (frametime) m))))))]
+      ; true if the this time has expired
+      (let ([expired (< this 0.0)])
+        (begin0 expired
 
-             ; change the timer and reset it
-             [nt (set! time nt)
-                 (set! timer time)]))))]))
+                ; reset if looping
+                (when (and loop expired)
+                  (set! this time)))))))
 
 ;; ----------------------------------------------------
 
@@ -261,7 +250,7 @@ All rights reserved.
            (when (shader)
              (let ([size (make-sfGlslVec2 (exact->inexact (width))
                                           (exact->inexact (height)))])
-               (sfShader_setVec2Uniform (shader) "textureSize" size))))
+               (sfShader_setVec2Uniform (shader) "resolution" size))))
         
          ; main game loop
          (λ ()
@@ -273,8 +262,10 @@ All rights reserved.
 
          ; clean-up
          (λ ()
-           (unregister-custodian-shutdown (window) v)
+           (sfRenderWindow_close (window))
 
            ; stop playing sounds and music
            (stop-music)
-           (stop-sound)))))))
+           (stop-sound)
+           
+           (unregister-custodian-shutdown (window) v)))))))

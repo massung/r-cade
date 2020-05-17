@@ -19,10 +19,11 @@ All rights reserved.
 
 #|
 
-The CRT-effect shaders below was taken (and modified) from
-the Z_PI shaders, created by Greg Hogan:
+The shader below has been a slow work in progress of mine, but
+is a derivative of several other shaders, most of which were
+found here:
 
-  Copyright (C) 2017 Greg Hogan (SoltanGris42)
+  https://github.com/libretro/glsl-shaders
 
 A hearty thanks goes out to the CRT shader emulation community
 for their hard work!!
@@ -41,32 +42,56 @@ for their hard work!!
 
 (define scanline-shader
   (string-append "uniform sampler2D texture;"
-                 "uniform vec2 textureSize;"
-                 ""
+                 "uniform vec2 resolution;"
+
+                 ; scanline settings
+                 "const float SCANLINE = 0.5;"
+                 "const float SQRT_2PI = 2.506628;"
+
+                 ; luminance of a color
+                 "float lum(vec3 color) {"
+                 "    return color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;"
+                 "}"
+
+                 ; normal distribution
+                 "float dist(float x) {"
+                 "    return exp(-0.5 * x * x);"; * SQRT_2PI;"
+                 "}"
+
+                 ; returns the phosphor color at the pixel
+                 "vec3 phosphor() {"
+                 "    vec2 uv = gl_TexCoord[0].xy;"
+                 "    vec3 color = texture2D(texture, uv).rgb;"
+
+                 ; normal distribution of b, g, r across pixel
+                 "    float x = mod(uv.x * resolution.x * 3.0, 3.0);"
+                 "    float m = lum(color);"
+                 "    float b = dist(x - 0.0);"
+                 "    float g = dist(x - 1.0);"
+                 "    float r = dist(x - 2.0);"
+
+                 ; phosphor channel scaled by luminance of pixel
+                 "    return mix(color, vec3(r, g, b) * m, 0.4);"
+                 "}"
+
+                 ; pixel color vs. scanline
+                 "vec3 scanline() {"
+                 "    float y = gl_TexCoord[0].y * resolution.y;"
+                 "    float b = floor(y);"
+                 "    float w = 1.0;"
+                 "    float x = y - b;"
+
+                 ; exponential decay color when close to scanline
+                 "    if (x > SCANLINE) {"
+                 "        w = mix(1.0, 0.0, (x - SCANLINE) / (1.0 - SCANLINE));"
+                 "    }"
+
+                 ; combine horizontal and vertical scanline
+                 "    return vec3(1.0, 1.0, 1.0) * w;"
+                 "}"
+                 
                  "void main() {"
-                 "    float whichMask = fract(gl_FragCoord.x * 0.5);"
-                 "    float mask = 1.0 - float(whichMask < 0.5) * 0.3;"
-                 ""
-                 "    vec2 invSize = 1.0 / textureSize.xy;"
-                 "    vec2 texCoordInPixels = gl_TexCoord[0].xy * textureSize;"
-                 "    vec2 centerCoord = floor(texCoordInPixels.xy) + vec2(0.5, 0.5);"
-                 "    vec2 distFromCenter = abs(centerCoord - texCoordInPixels);"
-                 ""
-                 "    float Y = distFromCenter.y * distFromCenter.y;"
-                 "    float YY = Y * Y;"
-                 "    float scanLineWeight = 1.2 - 6.0 * (Y - 2.05 * YY);"
-                 "    float scanLineWeightB = 1.0 - 14.0 * (YY - 2.8 * YY * Y);"
-                 ""
-                 "    float tx = invSize.x * (centerCoord.x - 0.4 * distFromCenter.x);"
-                 "    float ty = invSize.y * (centerCoord.y - 0.3 * distFromCenter.y);"
-                 ""
-                 "    vec2 tc = vec2(tx, ty);"
-                 "    vec3 color = texture2D(texture, tc).rgb;"
-                 ""
-                 "    color.rgb *= 0.8 + 0.2 * color.rgb;"
-                 "    color.rgb *= mix(scanLineWeight * mask, scanLineWeightB, dot(color.rgb, vec3(0.28)));"
-                 ""
-                 "    gl_FragColor = vec4(color.rgb, 1.0);"
+                 "    gl_FragColor = vec4(phosphor() * scanline(), 1.0);"
                  "}"))
 
 ;; ----------------------------------------------------

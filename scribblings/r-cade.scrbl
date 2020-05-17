@@ -157,31 +157,47 @@ This function isn't really used much outside of @racket[wait].
 
 
 @;; ----------------------------------------------------
-@section{Action Bindings}
+@section{Actions}
 
 Sometimes you want to be able to bind buttons to specific, named actions so your
 code is easier to read (and modify if you want to change your button mapping). To
-do this, use the @racket[define-action] macro.
+do this, use the @racket[action] function.
 
 
 @;; ----------------------------------------------------
-@defform/subs[(define-action name btn [rate #f])
-              ([name symbol?]
-               [btn procedure?]
-               [rate (or #t exact-nonnegative-integer?)])]{
-Defines a new function @racket[name] that returns @racket[#t] if the mapped @racket[btn] binding predicate function should be considered "pressed".
+@defproc[(action [btn procedure?] [rate exact-nonnegative-integer? 0]) procedure?]{
+Returns a function with arity 0 that returns either @racket[#t] or @racket[#f], indicating whether or not the action is should be considered "pressed".
 
-If @racket[rate] is @racket[#f] (the default), then the action is defined as @racket[(define name btn)].
+The @racket[btn] parameter should be one of the @tt{btn-*} functions (e.g. @racket[btn-z]).
 
-If @racket[rate] is @racket[#t] then the action will return @racket[#t] if the @racket[btn] returns @tt{1}, indicating it was just pressed this frame.
+The @racket[rate] is how many times (per second) the action should be considered "pressed" as long as @racket[btn] is held down. The default (@racket[0]) means only returns @racket[#t] on the initial press of @racket[btn] and not while held down.
+}
 
-Otherwise, @racket[rate] should be a non-negative integer indicating how many times per seconds the action function should return @racket[#t] assuming the button is held down. This is useful for actions like shooting that shouldn't happen every frame, but you also don't want the user to have to keep pressing the input button.
+
+@;; ----------------------------------------------------
+@section{Timers}
+
+It's possible to create countdown timer functions that expire after some time has elapsed.
+
+
+@;; ----------------------------------------------------
+@defproc[(timer [time real?] [#:loop loop boolean? #f]) procedure?]{
+Returns a function that will count down the @racket[time] until it reaches @tt{0.0}, at which point the function returned will return @racket[#t] indicating the time has elapsed.
+
+If @racket[loop] is @racket[#t], then when the timer expires it will automatically reset back to @racket[time] and begin counting down again.
+
+Example use:
 
 @racketblock[
- (define-action move-left btn-left)
- (define-action jump btn-z #t)
- (define-action fire btn-x 5)
-]}
+(define boss-attack-timer (timer 5 #:loop #t))
+
+(define (game-loop)
+  (when (boss-attack-timer)
+    (do-boss-attack)))
+]
+
+Note: the timer will only advance if when called. This allows you to "pause" a timer by simply not calling it (e.g. while the game is paused). However, this also means calling the function multiple times in the same frame will advance it multiple times. It's best to call it once per frame and save 
+}
 
 
 @;; ----------------------------------------------------
@@ -412,7 +428,7 @@ This means that in the time range of [@tt{0.0}, @racket[0.33]] the sound will pl
 
 
 @;; ----------------------------------------------------
-@defthing[noise-wave procedure?]{A wave function that may be passed as an instrument].}
+@defthing[noise-wave procedure?]{A wave function that may be passed as an instrument.}
 
 
 @;; ----------------------------------------------------
@@ -478,10 +494,6 @@ Helper function that returns a @racket[sound] that plays a constant frequency.
                 [voice voice? basic-voice]) sound?]{
 Helper function that returns a @racket[sound] using a curve function that linearly interpolates from @racket[start-freq] to @racket[end-freq].
 }
-
-
-@;; ----------------------------------------------------
-@defproc[(sound? [x any]) boolean?]{Returns @racket[#t] if @racket[x] is a PCM sound buffer.}
 
 
 @;; ----------------------------------------------------
