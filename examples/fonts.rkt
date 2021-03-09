@@ -17,15 +17,23 @@
 
 ;; ----------------------------------------------------
 
+(define show-font 0)
+
+;; ----------------------------------------------------
+
 (define (test-font)
   (cls)
   (color 7)
 
-  ; set the font based on the button
-  (font (cond
-          ((btn-z) tall-font)
-          ((btn-x) wide-font)
-          (#t basic-font)))
+  ; cycle through fonts with select
+  (when (btn-select)
+    (set! show-font (remainder (+ show-font 1) 3)))
+
+  ; current font
+  (font (case show-font
+          [(0) basic-font]
+          [(1) tall-font]
+          [(2) wide-font]))
 
   ; draw strings
   (for ([s strings] [y (in-naturals)])

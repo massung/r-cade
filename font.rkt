@@ -68,7 +68,7 @@ All rights reserved.
               #((#x40 #x40 #x40 #x00 #x40 #x00)    ; !
                 (#xa0 #xa0 #x00 #x00 #x00 #x00)    ; "
                 (#xa0 #xe0 #xa0 #xe0 #xa0 #x00)    ; #
-                (#x60 #xc0 #x40 #x60 #xc0 #x00)    ; $
+                (#x40 #x60 #xc0 #x60 #xc0 #x40)    ; $
                 (#xa0 #x20 #x40 #x80 #xa0 #x00)    ; %
                 (#xc0 #xc0 #x80 #xe0 #xc0 #x00)    ; &
                 (#x40 #x40 #x00 #x00 #x00 #x00)    ; '
@@ -96,7 +96,7 @@ All rights reserved.
                 (#x00 #xe0 #x00 #xe0 #x00 #x00)    ; =
                 (#x80 #x40 #x20 #x40 #x80 #x00)    ; >
                 (#xc0 #x20 #x40 #x00 #x40 #x00)    ; ?
-                (#x00 #x60 #xa0 #x80 #x60 #x00)    ; @
+                (#x60 #xe0 #x80 #x80 #x60 #x00)    ; @
                 (#x40 #xa0 #xe0 #xa0 #xa0 #x00)    ; A
                 (#xc0 #xa0 #xc0 #xa0 #xc0 #x00)    ; B
                 (#x40 #xa0 #x80 #xa0 #x40 #x00)    ; C
@@ -110,7 +110,7 @@ All rights reserved.
                 (#xa0 #xa0 #xc0 #xa0 #xa0 #x00)    ; K
                 (#x80 #x80 #x80 #x80 #xe0 #x00)    ; L
                 (#xa0 #xe0 #xa0 #xa0 #xa0 #x00)    ; M
-                (#xa0 #xe0 #xe0 #xa0 #xa0 #x00)    ; N
+                (#xc0 #xa0 #xa0 #xa0 #xa0 #x00)    ; N
                 (#x40 #xa0 #xa0 #xa0 #x40 #x00)    ; O
                 (#xc0 #xa0 #xc0 #x80 #x80 #x00)    ; P
                 (#x40 #xa0 #xa0 #xe0 #x60 #x00)    ; Q
@@ -133,7 +133,7 @@ All rights reserved.
                 (#x80 #xc0 #xa0 #xa0 #xc0 #x00)    ; b
                 (#x00 #x60 #x80 #x80 #x60 #x00)    ; c
                 (#x20 #x60 #xa0 #xa0 #x60 #x00)    ; d
-                (#x00 #x60 #xe0 #x80 #x60 #x00)    ; e
+                (#x00 #x40 #xe0 #x80 #x60 #x00)    ; e
                 (#x60 #x40 #xe0 #x40 #x40 #x00)    ; f
                 (#x00 #xc0 #xa0 #xe0 #x20 #xe0)    ; g
                 (#x80 #xc0 #xa0 #xa0 #xa0 #x00)    ; h
@@ -263,7 +263,7 @@ All rights reserved.
 
 (define wide-font
   (make-font #:advance 8
-             #((#x30 #x30 #x30 #x30 #x00 #x30 #x00 #x00)    ; !
+             #((#x30 #x30 #x30 #x30 #x00 #x00 #x30 #x00)    ; !
                (#xd8 #xd8 #x00 #x00 #x00 #x00 #x00 #x00)    ; "
                (#x6c #x6c #xfe #x6c #xfe #x6c #x6c #x00)    ; #
                (#x10 #x7e #x90 #x7c #x12 #xfc #x10 #x00)    ; $

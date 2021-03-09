@@ -380,7 +380,7 @@
 
   ; player controls
   (when (> finish-line (horse-x player) 32)
-    (if (eq? (action-btn) 1)
+    (if (action-btn)
         (begin
           (use-crop player)
           (set! action-btn (if (eq? action-btn btn-z) btn-x btn-z)))

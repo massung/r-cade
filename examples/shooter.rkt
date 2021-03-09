@@ -77,11 +77,15 @@
       (or (and (> vy 0) (> (- y r) (r:height)))
           (and (< vy 0) (< (+ y r) 0))))
 
+    ; apply an impulse along a give vector
+    (define/public (apply-force dx dy)
+      (set! vx (+ vx dx))
+      (set! vy (+ vy dy)))
+
     ; apply an impulse to the object in its forward vector
     (define/public (apply-impulse n)
       (let-values ([(dx dy) (rotate (* fx n) (* fy n))])
-        (set! vx (+ vx dx))
-        (set! vy (+ vy dy))))
+        (apply-force dx dy)))
 
     ; rotate a point into the space of this object
     (define/public (rotate px py)
@@ -145,19 +149,66 @@
 (define asteroid%
   (class game-obj%
     (super-new)
-    (inherit-field x y)
+    (inherit-field x y r)
 
     ; initialization
     (init-field [size 2])
 
     ; explode into smaller asteroids
     (define/public (explode)
+      (r:play-sound boom-sound)
       (when (> size 0)
         (for ([_ (range (+ 2 (random 2)))])
-          (spawn-asteroid (- size 1) x y)))
+          (let ([dx (- (* (random) r 2) r)]
+                [dy (- (* (random) r 2) r)])
+            (spawn-asteroid (- size 1) (+ x dx) (+ y dy)))))
 
       ; get rid of this asteroid
       (send this destroy))))
+
+;; ----------------------------------------------------
+
+(define exhaust%
+  (class game-obj%
+    (super-new [color 9])
+
+    ; render fields
+    (inherit-field x y color)
+
+    ; very short lived
+    (define t (r:timer 0.1))
+
+    ; die after time elapsed
+    (define/override (advance)
+      (super advance)
+      (when (t)
+        (send this destroy)))
+    
+    ; draw using a 1-pixel sprite
+    (define/override (draw)
+      (r:color color)
+      (r:draw x y '(#x80)))))
+
+;; ----------------------------------------------------
+
+(define moon%
+  (class game-obj%
+    (super-new [color 6])
+
+    ; render fields
+    (inherit-field x y r color)
+    (set! r 10)
+
+    ; die if off-screen
+    (define/override (advance)
+      (super advance)
+      (when (or (send this offscreen-x?) (send this offscreen-y?))
+        (send this destroy)))
+    
+    ; draw using a 1-pixel sprite
+    (define/override (draw)
+      (r:color color)
+      (r:circle x y r #:fill #t))))
 
 ;; ----------------------------------------------------
 
@@ -190,7 +241,7 @@
     ; draw using a 1-pixel sprite
     (define/override (draw)
       (r:color color)
-      (r:draw x y '(#x80)))))
+      (r:draw x y '(#xc0 #xc0)))))
 
 ;; ----------------------------------------------------
 
@@ -198,7 +249,7 @@
 
 ;; ----------------------------------------------------
 
-(define boom-sound (r:tone 40 0.75 (r:voice r:noise-wave r:fade-out-envelope)))
+(define boom-sound (r:tone 40 0.65 (r:voice r:noise-wave r:fade-out-envelope)))
 
 ;; ----------------------------------------------------
 
@@ -208,6 +259,7 @@
 
 (define btn-thrust r:btn-up)
 (define btn-shoot (r:action r:btn-z 6))
+(define btn-blast (r:action r:btn-x))
 
 ;; ----------------------------------------------------
 
@@ -215,8 +267,10 @@
 (define score 0)
 (define hi-score 10000)
 (define player #f)
+(define moon #f)
 (define asteroids null)
 (define missiles null)
+(define exhaust null)
 (define spawn-timer (r:timer 5.0 #:loop #t))
 
 ;; ----------------------------------------------------
@@ -270,10 +324,17 @@
 
       ; move one axis offscreen
       (case (random 4)
-        ((0) (set! x (- 50)))
-        ((1) (set! x (+ 50 (r:width))))
-        ((2) (set! y (- 50)))
-        ((3) (set! y (+ 50 (r:height))))))
+        ((0) (set! x (- 60)))
+        ((1) (set! x (+ 60 (r:width))))
+        ((2) (set! y (- 60)))
+        ((3) (set! y (+ 60 (r:height)))))
+
+      ; force vector is always towards the player
+      (let* ([dx (- (get-field x player) x)]
+             [dy (- (get-field y player) y)]
+             [s (sqrt (+ (* dx dx) (* dy dy)))])
+        (set! fx (/ dx s))
+        (set! fy (/ dy s))))
 
     ; create the object
     (let ([asteroid (new asteroid%
@@ -291,6 +352,18 @@
 
       ; add it to the list
       (set! asteroids (cons asteroid asteroids)))))
+
+;; ----------------------------------------------------
+
+(define (expel-exhaust)
+  (let-values ([(x y) (send player transform 0 4)]
+               [(vx vy) (send player rotate (- (random 20) 10) (+ (get-field vy player) 50))])
+    (let ([e (new exhaust%
+                  [x x]
+                  [y y]
+                  [vx vx]
+                  [vy vy])])
+      (set! exhaust (cons e exhaust)))))
 
 ;; ----------------------------------------------------
 
@@ -325,17 +398,19 @@
       (when (and (get-field alive m)
                  (test-missile-collision m a))
         (set! score (+ score (* (get-field size a) 100) 50))
-        (r:play-sound boom-sound)
         (send a explode)
         (send m destroy)))))
 
 ;; ----------------------------------------------------
 
 (define (draw-game-objs)
-  (for ([asteroid asteroids])
-    (send asteroid draw))
-  (for ([missile missiles])
-    (send missile draw))
+  (for ([obj asteroids])
+    (send obj draw))
+  (for ([obj missiles])
+    (send obj draw))
+  (for ([obj exhaust])
+    (send obj draw))
+  (when moon (send moon draw))
   (send player draw))
 
 ;; ----------------------------------------------------
@@ -346,17 +421,44 @@
 
 ;; ----------------------------------------------------
 
+(define (apply-moon-gravity)
+  (let* ([x (get-field x moon)]
+         [y (get-field y moon)]
+         [apply-g (λ (obj)
+                    (let* ([dx (- x (get-field x obj))]
+                           [dy (- y (get-field y obj))]
+                           [s (sqrt (+ (* dx dx) (* dy dy)))]
+                           [g (/ 10 (* s s))]
+                           [fx (* dx g)]
+                           [fy (* dy g)])
+                      (send obj apply-force fx fy)))])
+    (for ([o missiles]) (apply-g o))
+    (for ([o asteroids]) (apply-g o))
+    (apply-g player)))
+
+;; ----------------------------------------------------
+
 (define (advance-game-objs)
   (send player advance)
 
   ; advance missiles and asteroids
+  (for ([o exhaust]) (send o advance))
   (for ([o missiles]) (send o advance))
   (for ([o asteroids]) (send o advance))
+
+  ; apply moon gravity
+  (when moon
+    (send moon advance)
+    (apply-moon-gravity)
+
+    (unless (get-field alive moon)
+      (set! moon #f)))
 
   ; perform collisions
   (collide-missiles)
   
   ; remove dead objects
+  (set! exhaust (filter (λ (o) (get-field alive o)) exhaust))
   (set! missiles (filter (λ (o) (get-field alive o)) missiles))
   (set! asteroids (filter (λ (o) (get-field alive o)) asteroids)))
 
@@ -384,6 +486,7 @@
   (when (r:btn-right)
     (send player turn 270))
   (when (r:btn-up)
+    (expel-exhaust)
     (send player apply-impulse 1))
 
   ; check for game quit
@@ -421,6 +524,8 @@
   (set! score 0)
   (set! asteroids null)
   (set! missiles null)
+  (set! moon (new moon%
+                  [x 50] [y 50]))
   (set! player (new game-obj%
                     [x (/ (r:width) 2)]
                     [y (/ (r:height) 2)]

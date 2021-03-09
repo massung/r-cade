@@ -152,10 +152,10 @@
 
 ;; ----------------------------------------------------
 
-(define rotate-action (action btn-z 5))
-(define drop-action (action btn-down 10))
-(define left-action (action btn-left 5))
-(define right-action (action btn-right 5))
+(define rotate-action (action btn-z #t 2))
+(define drop-action (action btn-down #t 15))
+(define left-action (action btn-left #t 5))
+(define right-action (action btn-right #t 5))
 
 ;; ----------------------------------------------------
 
@@ -406,7 +406,7 @@
 ;; ----------------------------------------------------
 
 (define (random-gem)
-  (let ([i (random (vector-length gem-colors))])
+  (let ([i (random (+ (vector-length gem-colors) -3 difficulty))])
     (gem (vector-ref gem-colors i) (remainder i 3))))
   
 ;; ----------------------------------------------------
@@ -500,13 +500,13 @@
 (define (new-game)
   (setup-board)
 
-  ; fill lines with unbreakable by difficulty
+  ; fill lines with random gems
   (for* ([y (range (case difficulty
                     [(1) 0]
                     [(2) 2]
                     [(3) 4]))]
          [col columns])
-    (vector-set! (column-gems col) y end-game-gem))
+    (vector-set! (column-gems col) y (random-gem)))
 
   ; the initial and next gem triplets
   (set! triplet-next (random-triplet))
@@ -616,10 +616,9 @@
               (text 18 96 "Press START"))
 
             ; select difficulty
-            (when (or (eq? (btn-down) 1)
-                      (eq? (btn-select) 1))
+            (when (or (btn-down) (btn-select))
               (set! difficulty (+ (remainder difficulty 3) 1)))
-            (when (eq? (btn-up) 1)
+            (when (btn-up)
               (set! difficulty (+ (remainder (+ difficulty 1) 3) 1)))
 
             ; start game
@@ -661,7 +660,7 @@
 ;; ----------------------------------------------------
 
 (define (play)
-  (run start-screen 100 137 #:init new-game #:fps 20 #:title "R-cade: Columns"))
+  (run start-screen 100 137 #:init new-game #:fps 30 #:title "R-cade: Columns"))
 
 ;; ----------------------------------------------------
 

@@ -8,7 +8,7 @@
 
 ;; ----------------------------------------------------
 
-(define draw-stars btn-z)
+(define draw-stars (action btn-z #t))
 
 ;; ----------------------------------------------------
 
@@ -32,14 +32,18 @@
   (when (draw-stars)
     (for ([i (range 5)])
       (color (random 7 16))
-      (draw (random 128) (random 128) '(#b0001000
-                                        #b0000000
-                                        #b0001000
-                                        #b1011101
-                                        #b0001000
-                                        #b0001000
-                                        #b0000000
-                                        #b0001000))))
+      (draw (random 128)
+            (random 128)
+            (if (positive? (random 10))
+                '(#x80)
+                '(#b0001000
+                  #b0000000
+                  #b0001000
+                  #b1011101
+                  #b0001000
+                  #b0001000
+                  #b0000000
+                  #b0001000)))))
 
   ; quit when escape is pressed
   (when (btn-quit)

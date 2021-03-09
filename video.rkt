@@ -84,18 +84,23 @@ All rights reserved.
 
          ; find the center pixel of the window
          [center (make-sfVector2i (quotient w 2) (quotient h 2))])
-    
-    ; setup the display to render in the center
+
+    ; prepare the render sprite
     (sfSprite_setTexture (sprite) (sfRenderTexture_getTexture (texture)) #t)
     (sfSprite_setOrigin (sprite) (make-sfVector2f x y))
     (sfSprite_setScale (sprite) (make-sfVector2f scale scale))
-    (sfSprite_setPosition (sprite) (sfRenderWindow_mapPixelToCoords (window) center #f)))
+    (sfSprite_setPosition (sprite) (sfRenderWindow_mapPixelToCoords (window) center #f))
 
-  ; use the crt shader (may be null)
-  (set-sfRenderStates-shader! (render-state) (shader))
+    ; set the scale in the shader
+    (when (shader)
+      (sfShader_setFloatUniform (shader) "scale" scale))
+
+    ; use the crt shader; may be null
+    (set-sfRenderStates-shader! (render-state) (shader))
   
-  ; redraw the window
-  (sfRenderWindow_clear (window) bg)
-  (sfRenderWindow_drawSprite (window) (sprite) (render-state))
-  
-  (sfRenderWindow_display (window)))
+    ; render video texture
+    (sfRenderWindow_clear (window) bg)
+    (sfRenderWindow_drawSprite (window) (sprite) (render-state))
+
+    ; present the window
+    (sfRenderWindow_display (window))))

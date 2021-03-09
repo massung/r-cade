@@ -411,9 +411,9 @@
             (set! invader-bomb-timer 0.5)))))
 
   ; player controls
-  (when (and (> player-x 3) (btn-left))
+  (when (and (> player-x 3) (btn-left #t))
     (set! player-x (- player-x (* 40 (frametime)))))
-  (when (and (< player-x (- (width) 4)) (btn-right))
+  (when (and (< player-x (- (width) 4)) (btn-right #t))
     (set! player-x (+ player-x (* 40 (frametime)))))
 
   (when (btn-quit)

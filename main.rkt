@@ -24,6 +24,8 @@ All rights reserved.
 (require "sound.rkt")
 (require "audio.rkt")
 (require "music.rkt")
+(require "anim.rkt")
+(require "time.rkt")
 
 ;; ----------------------------------------------------
 
@@ -80,6 +82,10 @@ All rights reserved.
  basic-font
  tall-font
  wide-font
+
+ ; anim
+ anim-frame
+ anim-sprite
 
  ; voice
  (struct-out voice)

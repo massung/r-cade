@@ -25,7 +25,7 @@ All the most recent updates, blog posts, etc. can be found at @url{http://r-cade
               [#:init init procedure? #f]
               [#:scale scale-factor exact-nonnegative-integer? #f]
               [#:fps frame-rate exact-nonnegative-integer? 60]
-              [#:shader crt-effect boolean? #t]
+              [#:shader enable-shader boolean? #t]
               [#:title window-title string? "R-cade"])
          void?]{
 Creates a new game window, video memory, and enters the main game loop.
@@ -40,7 +40,7 @@ The @racket[scale-factor] parameter will determine the initial size of the windo
 
 The @racket[frame-rate] is the number of times per second the @racket[game-loop] function will be called the window will update with what's stored in VRAM.
 
-The @racket[crt-effect] controls whether or not the contents of VRAM are rendered using a fullscreen shader effect that mimics a CRT. If this is set to @racket[#f] the effect will be disabled.
+The @racket[enable-shader] controls whether or not the contents of VRAM are rendered using a fullscreen shader effect. If this is set to @racket[#f] the effect will be disabled.
 
 The @racket[window-title] parameter is the title given to the window created.
 }
@@ -55,7 +55,7 @@ The @racket[window-title] parameter is the title given to the window created.
 
 
 @;; ----------------------------------------------------
-@defproc[(wait [until procedure? btn-any]) void?]{Hard stops the game loop and waits until either the window is closed or the until function returns true. While waiting, events are still processed.}
+@defproc[(wait [until procedure? btn-any]) void?]{Hard stops the game loop and waits until either the window is closed or the until function returns true. While waiting, events are still processed. This is commonly used to wait for the user to press a button.}
 
 
 @;; ----------------------------------------------------
@@ -86,47 +86,62 @@ The @racket[window-title] parameter is the title given to the window created.
 @section{Input}
 
 
-All @tt{btn-*} functions return @racket[#f] if their respective button is not pressed, otherwise they return the count of how many frames the button has been pressed for. For example, a return value of @tt{1} would indicate the button was just pressed. This allows for easy testing of not pressed, pressed, just pressed, or against a desired repeat rate.
+All @tt{btn-*} functions return either @racket[#t] or @racket[#f] to indicate if the button should currently be considered "pressed".
+
+The @racket[hold] parameter should be set to @racket[#f] if the button predicate should only return @racket[#t] once when the button is initially pressed, but @racket[#f] if held down.
+
+If @racket[hold] is @racket[#t], then the @racket[rate] parameter can also be optionally set to limit how often a held button can return true. The rate is in presses per second.
+
+For example, if you want to know if the Z button was just pressed this frame by the player, you would check with:
+
+@code[]{(btn-z)}
+
+If you want to know if the Z button is pressed, regardless of how long it has been held down for:
+
+@code[]{(btn-z #t)}
+
+But, let's say you're using the Z button to shoot a weapon, but only want the user to be able to fire at a rate of 3 times per second, you could check with:
+
+@code[]{(btn-z #t 3)}
+
+@;; ----------------------------------------------------
+@defproc[(btn-start [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the ENTER key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-start) (or #f exact-nonnegative-integer?)]{Returns the state of the ENTER key.}
+@defproc[(btn-select [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the SPACEBAR key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-select) (or #f exact-nonnegative-integer?)]{Returns the state of the SPACEBAR key.}
+@defproc[(btn-quit [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the ESCAPE key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-quit) (or #f exact-nonnegative-integer?)]{Returns the state of the ESCAPE key.}
+@defproc[(btn-z [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the Z key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-z) (or #f exact-nonnegative-integer?)]{Returns the state of the Z key.}
+@defproc[(btn-x [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the X key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-x) (or #f exact-nonnegative-integer?)]{Returns the state of the X key.}
+@defproc[(btn-up [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the UP arrow key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-up) (or #f exact-nonnegative-integer?)]{Returns the state of the UP arrow key.}
+@defproc[(btn-down [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the DOWN arrow key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-down) (or #f exact-nonnegative-integer?)]{Returns the state of the DOWN arrow key.}
+@defproc[(btn-right [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the RIGHT arrow key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-right) (or #f exact-nonnegative-integer?)]{Returns the state of the RIGHT arrow key.}
+@defproc[(btn-left [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the LEFT arrow key.}
 
 
 @;; ----------------------------------------------------
-@defproc[(btn-left) (or #f exact-nonnegative-integer?)]{Returns the state of the LEFT arrow key.}
-
-
-@;; ----------------------------------------------------
-@defproc[(btn-mouse) (or #f exact-nonnegative-integer?)]{Returns the state of the LEFT mouse button.}
+@defproc[(btn-mouse [hold boolean? #f] [rate exact-nonnegative-integer? #f]) boolean?]{Returns the state of the LEFT mouse button.}
 
 
 @;; ----------------------------------------------------
@@ -159,18 +174,16 @@ This function isn't really used much outside of @racket[wait].
 @;; ----------------------------------------------------
 @section{Actions}
 
-Sometimes you want to be able to bind buttons to specific, named actions so your
-code is easier to read (and modify if you want to change your button mapping). To
-do this, use the @racket[action] function.
+Sometimes you want to be able to bind buttons to specific, named actions so your code is easier to read (and modify if you want to change your button mapping). To do this, use the @racket[action] function.
 
 
 @;; ----------------------------------------------------
-@defproc[(action [btn procedure?] [rate exact-nonnegative-integer? 0]) procedure?]{
+@defproc[(action [btn procedure?] [hold boolean? #f] [rate exact-nonnegative-integer? 0]) procedure?]{
 Returns a function with arity 0 that returns either @racket[#t] or @racket[#f], indicating whether or not the action is should be considered "pressed".
 
 The @racket[btn] parameter should be one of the @tt{btn-*} functions (e.g. @racket[btn-z]).
 
-The @racket[rate] is how many times (per second) the action should be considered "pressed" as long as @racket[btn] is held down. The default (@racket[0]) means only returns @racket[#t] on the initial press of @racket[btn] and not while held down.
+The @racket[hold] and @racket[rate] parameters are the same as what would be passed to the @racket[btn] function.
 }
 
 
@@ -196,7 +209,7 @@ Example use:
     (do-boss-attack)))
 ]
 
-Note: the timer will only advance if when called. This allows you to "pause" a timer by simply not calling it (e.g. while the game is paused). However, this also means calling the function multiple times in the same frame will advance it multiple times. It's best to call it once per frame and save 
+Note: the timer will only advance when called. This allows you to "pause" a timer by simply not calling it (e.g. while the game is paused). However, this also means calling the function multiple times in the same frame will advance it multiple times.
 }
 
 

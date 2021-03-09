@@ -11,7 +11,6 @@ All rights reserved.
 
 (require csfml)
 (require ffi/unsafe/custodian)
-(require racket/match)
 
 ;; ----------------------------------------------------
 
@@ -23,6 +22,7 @@ All rights reserved.
 (require "palette.rkt")
 (require "audio.rkt")
 (require "sound.rkt")
+(require "time.rkt")
 
 ;; ----------------------------------------------------
 
@@ -36,17 +36,6 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define framerate (make-parameter #f))
-(define frame (make-parameter #f))
-(define frameclock (make-parameter #f))
-
-;; ----------------------------------------------------
-
-(define frametime (make-parameter #f))
-(define gametime (make-parameter #f))
-
-;; ----------------------------------------------------
-
 (define game-loop (make-parameter (λ ()
                                     (cls)
                                     (when (btn-quit)
@@ -54,34 +43,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (action btn [rate 0])
-  (if (<= rate 0)
-      (λ () (eq? (btn) 1))
-      (λ ()
-        (let ([n (floor (/ (framerate) rate))])
-          (and (btn) (= (remainder (btn) n) 1))))))
-
-;; ----------------------------------------------------
-
-(define (timer time #:loop [loop #f])
-  (let ([this time])
-    (λ (#:reset [reset #f])
-      (set! this (if reset time (- this (frametime))))
-
-      ; true if the this time has expired
-      (let ([expired (< this 0.0)])
-        (begin0 expired
-
-                ; reset if looping
-                (when (and loop expired)
-                  (set! this time)))))))
-
-;; ----------------------------------------------------
-
 (define (process-events)
-  (update-buttons)
-
-  ; handle every event in the queue
   (do ([event (sfRenderWindow_pollEvent (window))
               (sfRenderWindow_pollEvent (window))])
     ((not event))
@@ -98,6 +60,10 @@ All rights reserved.
          (on-key-pressed (sfEvent-key event)))
         ('sfEvtKeyReleased
          (on-key-released (sfEvent-key event)))
+
+        ; text entered
+        ;('sfEvtTextEntered
+        ; (on-user-input (sfEvent-text event)))
         
         ; mouse events
         ('sfEvtMouseMoved
@@ -111,7 +77,7 @@ All rights reserved.
 
 (define (goto update)
   (game-loop update))
-  
+
 ;; ----------------------------------------------------
 
 (define (sync)
@@ -120,18 +86,9 @@ All rights reserved.
 
   ; render vram
   (flip (frame) (gametime))
-  
-  ; wait for the next frame
-  (let* ([elapsed (sfClock_getElapsedTime (frameclock))]
-         [delta (- (/ (framerate)) (sfTime_asSeconds elapsed))])
-    (unless (< delta 0.0)
-      (sleep delta)))
 
-  ; update frametime, gametime, frame, and reset the frame clock
-  (frametime (sfTime_asSeconds (sfClock_getElapsedTime (frameclock))))
-  (gametime (+ (gametime) (frametime)))
-  (frame (+ (frame) 1))
-  (sfClock_restart (frameclock)))
+  ; wait for the next frame
+  (process-frametime))
 
 ;; ----------------------------------------------------
 
@@ -156,6 +113,18 @@ All rights reserved.
          [scale-x (quotient max-w w)]
          [scale-y (quotient max-h h)])
     (inexact->exact (max (min scale-x scale-y) 1))))
+
+;; ----------------------------------------------------
+
+(define (break-repl exn)
+  (read-eval-print-loop)
+  ;(let ([r-read (λ ()
+  ;                (display "R-CADE> ")
+  ;                (let ([in (current-get-interaction-input-port)])
+  ;                  ((current-read-interaction) (object-name in) in)))])
+  ;  (parameterize ([current-prompt-read r-read])
+  ;    (read-eval-print-loop))))
+  )
 
 ;; ----------------------------------------------------
 
@@ -257,7 +226,7 @@ All rights reserved.
            (do () [(not (sfRenderWindow_isOpen (window)))]
              (sync)
 
-             ; execute the game loop
+             ; run main game loop
              ((game-loop))))
 
          ; clean-up
