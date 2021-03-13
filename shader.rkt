@@ -48,7 +48,7 @@ for their hard work!!
                  ; constants
                  "const float BLEND = 0.7;"
                  "const float SIGMA = 7.0;"
-                 "const int MSIZE = 7;"
+                 "const int MSIZE = 5;"
                  "const int KSIZE = (MSIZE-1) / 2;"
 
                  ; normalize
