@@ -45,27 +45,68 @@ for their hard work!!
                  "uniform vec2 resolution;"
                  "uniform float scale;"
 
-                 ; texel size
-                 "float BLEND = 0.7;"
+                 ; constants
+                 "const float BLEND = 0.7;"
+                 "const float SIGMA = 7.0;"
+                 "const int MSIZE = 7;"
+                 "const int KSIZE = (MSIZE-1) / 2;"
 
-                 ; how close to the edge is a pixel?
+                 ; normalize
+                 "float normpdf(float x) {"
+                 "    return 0.39894*exp(-0.5*x*x/(SIGMA*SIGMA))/SIGMA;"
+                 "}"
+
+                 ; uv coordinate of pixel + offset
+                 "vec2 uv(vec2 pixel, int x, int y) {"
+                 "    vec2 p = pixel + (vec2(float(x), float(y)) / scale);"
+                 "    return p / resolution;"
+                 "}"
+
+                 ; texture lookup
+                 "vec3 tex(vec2 pixel, int x, int y) {"
+                 "    return texture2D(texture, uv(pixel, x, y)).rgb;"
+                 "}"
+
+                 ; rgb scanlines
                  "vec4 scanline(float y, vec3 color) {"
                  "    float s = y - (3.0 * floor(y / 3.0));"
-                 ""
                  "    vec4 c = vec4(color, 1.0);"
+
+                 ; no scanlines if nonot enough scaling
+                 "    if (scale < 4.0) return c;"
 
                  ; b, g, or r scanline?
                  "    if (s < 1.0) return c * vec4(BLEND, BLEND, 1.0, 1.0);"
                  "    if (s < 2.0) return c * vec4(BLEND, 1.0, BLEND, 1.0);"
-                 ""
                  "    return c * vec4(1.0, BLEND, BLEND, 1.0);"
                  "}"
-                 
+
+                 ; entry point
                  "void main() {"
-                 "    vec2 uv = gl_TexCoord[0].xy;"
-                 "    vec3 color = texture2D(texture, uv).rgb;"
+                 "    vec2 pixel = gl_TexCoord[0].xy * resolution;"
+
+                 ; create the 1D kernel
+                 "    float kernel[MSIZE];"
+                 "    for (int j = 0;j < KSIZE;j++) {"
+                 "        kernel[KSIZE+j] = kernel[KSIZE-j] = normpdf(float(j));"
+                 "    }"
+
+                 ; calculate the normalization factor
+                 "    float z = 0.0;"
+                 "    for (int i=0;i < MSIZE;i++) {"
+                 "        z += kernel[i];"
+                 "    }"
+
+                 ; perform blur
+                 ;"    vec3 color = tex(pixel, 0, 0);"
+                 "    vec3 color = vec3(0.0, 0.0, 0.0);"
+                 "    for (int i=-KSIZE;i <= KSIZE;i++) {"
+                 "        for (int j=-KSIZE;j <= KSIZE;j++) {"
+                 "            color += kernel[KSIZE+i] * kernel[KSIZE+j] * tex(pixel, i, j);"
+                 "        }"
+                 "    }"
                  
-                 "    gl_FragColor = scanline(uv.y * resolution.y * scale, color);"
+                 "    gl_FragColor = scanline(pixel.y * scale, color / (z*z));"
                  "}"))
 
 ;; ----------------------------------------------------
