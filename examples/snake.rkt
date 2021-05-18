@@ -1,208 +1,280 @@
 #lang racket
 
-(require r-cade)
+(require (prefix-in r: r-cade))
 
 ;; ----------------------------------------------------
 
-(define snake-x #f)
-(define snake-y #f)
+(define snake-cx #f)
+(define snake-cy #f)
+(define snake-angle #f)
+(define snake-w #f)
 (define snake-body #f)
 (define snake-length #f)
-(define snake-growth #f)
-(define snake-angle #f)
-(define snake-angular-vel #f)
-(define snake-food #f)
+(define snake-segment-length #f)
 (define snake-health #f)
 (define snake-score #f)
 
 ;; ----------------------------------------------------
 
-(define yum (sweep 300 100 0.1 (voice square-wave basic-envelope)))
+(define hi-score 1000)
 
 ;; ----------------------------------------------------
 
-(define (grow-snake [n 10])
-  (set! snake-growth (+ snake-growth n)))
+(define snake-radius 15.0)
+(define snake-size 2.0)
 
 ;; ----------------------------------------------------
 
-(define (random-food)
-  (list (random 127)
-        (random 124)))
+(define food #f)
+(define food-size 1.0)
 
 ;; ----------------------------------------------------
 
-(define (eat-food)
-  (set! snake-food (for/list ([food snake-food])
-                     (let ([x (first food)]
-                           [y (second food)])
-                       (if (and (<= (- snake-x 1) (+ x 1))
-                                (>= (+ snake-x 1) x)
-                                (<= (- snake-y 1) (+ y 1))
-                                (>= (+ snake-y 1) y))
-                           (begin
-                             (play-sound yum)
-                             (grow-snake)
-
-                             ; add points and health
-                             (set! snake-score (+ snake-score 1000))
-                             (set! snake-health (min (+ snake-health 5) 60))
-
-                             ; a new piece of food
-                             (random-food))
-
-                           ; not eaten, keep food
-                           food)))))
+(define yum (r:sweep 300 100 0.1 (r:voice r:square-wave r:basic-envelope)))
 
 ;; ----------------------------------------------------
 
-(define (advance-snake)
-  (let ([dx (cos snake-angle)]
-        [dy (sin snake-angle)])
-    (set! snake-health (- snake-health (frametime)))
-    (eat-food)
+(define (wrap-x x)
+  (let ([w (r:width)])
+    (cond
+      [(< x 0) (+ x w)]
+      [(> x w) (- x w)]
+      [else x])))
 
-    ; append the head to the body
-    (let ([head (list snake-x snake-y)])
-      (set! snake-body (cons head snake-body)))
+;; ----------------------------------------------------
 
-    ; slither (or grow) the body
-    (if (> snake-growth 0)
-        (begin
-          (set! snake-growth (- snake-growth 1))
-          (set! snake-length (+ snake-length 1)))
-        (set! snake-body (drop-right snake-body 1)))
+(define (wrap-y y)
+  (let ([h (r:height)])
+    (cond
+      [(< y 0) (+ y h)]
+      [(> y h) (- y h)]
+      [else y])))
 
-    ; tally points
-    (when (zero? (remainder (frame) 10))
-      (set! snake-score (+ snake-score 1)))
+;; ----------------------------------------------------
 
-    ; update the snake's position
-    (set! snake-x (+ snake-x dx))
-    (set! snake-y (+ snake-y dy))
+(define (snake-x)
+  (wrap-x (+ snake-cx (* (cos snake-angle) snake-radius))))
 
-    ; wrap playfield
-    (when (< snake-x 0) (set! snake-x 127))
-    (when (< snake-y 0) (set! snake-y 122))
-    (when (>= snake-x 128) (set! snake-x 0))
-    (when (>= snake-y 123) (set! snake-y 0))
+;; ----------------------------------------------------
 
-    ; apply angular velocity
-    (let ([da (* snake-angular-vel (frametime))])
-      (set! snake-angle (+ snake-angle da)))))
+(define (snake-y)
+  (wrap-y (+ snake-cy (* (sin snake-angle) snake-radius))))
+
+;; ----------------------------------------------------
+
+(define (snake-head)
+  (list (snake-x) (snake-y)))
+
+;; ----------------------------------------------------
+
+(define (draw-snake-head [color 11])
+  (r:color color)
+  (r:circle (snake-x) (snake-y) (+ snake-size 1.0) #:fill #t))
+
+;; ----------------------------------------------------
+
+(define (snake-segments)
+  (let ([n (* snake-segment-length 2)])
+    (if (< (length snake-body) n)
+        null
+        (in-slice n (drop snake-body n)))))
+
+;; ----------------------------------------------------
+
+(define (draw-snake-body [color 3])
+  (r:color color)
+  (for ([seg (snake-segments)])
+    (match seg
+      [(list x y rest ...)
+       (r:circle x y snake-size #:fill #t)])))
 
 ;; ----------------------------------------------------
 
 (define (draw-snake)
-  (color 3)
-  (for ([pos snake-body])
-    (let ([x (first pos)]
-          [y (second pos)])
-      (draw x y '(#x80))))
+  (draw-snake-body)
+  (draw-snake-head))
 
-  ; head is bigger
-  (color 11)
-  (draw (- snake-x 1) (- snake-y 1) '(#xe0 #xe0 #xe0)))
+;; ----------------------------------------------------
+
+(define (shift-body)
+  (set! snake-body (append (snake-head)
+                           (if (< (length snake-body) snake-length)
+                               snake-body
+                               (drop-right snake-body 2)))))
+
+;; ----------------------------------------------------
+
+(define (advance-head)
+  (set! snake-angle (+ snake-angle (* snake-w (r:frametime)))))
+
+;; ----------------------------------------------------
+
+(define (turn-snake)
+  (let ([dx (- (snake-x) snake-cx)]
+        [dy (- (snake-y) snake-cy)])
+    (set! snake-w (- snake-w))
+
+    ; shift the center of the snake's pivot
+    (set! snake-cx (wrap-x (+ snake-cx dx dx)))
+    (set! snake-cy (wrap-y (+ snake-cy dy dy)))
+
+    ; invert the angle to the opposite side of the circle
+    (set! snake-angle (+ snake-angle pi))))
+
+;; ----------------------------------------------------
+
+(define (grow-snake [points 0])
+  (set! snake-score (+ snake-score points))
+  (set! snake-length (+ snake-length (* snake-segment-length 8))))
+
+;; ----------------------------------------------------
+
+(define (random-pos)
+  (list (random (r:width))
+        (random (r:height))))
+
+;; ----------------------------------------------------
+
+(define (spawn-food [n 1])
+  (let ([new-food (for/list ([i (range n)])
+                    (random-pos))])
+    (set! food (append food new-food))))
 
 ;; ----------------------------------------------------
 
 (define (draw-food)
-  (color 8)
-  (for ([food snake-food])
-    (let ([x (first food)]
-          [y (second food)])
-      (draw x y '(#xc0 #xc0)))))
+  (r:color 8)
+  (for ([pos food])
+    (match pos
+      [(list x y)
+       (r:circle x y food-size #:fill #t)])))
+
+;; ----------------------------------------------------
+
+(define (eat-food)
+  (let ([sx (snake-x)]
+        [sy (snake-y)]
+
+        ; r^2 to compare against for circle-circle overlap
+        [sz (* (+ snake-size food-size)
+               (+ snake-size food-size))])
+
+    ; split the food into 2 lists: overlapping and not
+    (let-values ([(eaten not-eaten)
+                  (partition (λ (pos)
+                               (match pos
+                                 [(list fx fy)
+                                  (let ([dx (- fx sx)]
+                                        [dy (- fy sy)])
+                                    (< (+ (* dx dx) (* dy dy)) sz))]))
+                             food)])
+
+      ; grow the snake and spawn new food to replace it
+      (let ([new-food (for/list ([_ eaten])
+                        (grow-snake 50)
+                        (r:play-sound yum)
+                        (random-pos))])
+        (set! food (append not-eaten new-food))))))
+
+;; ----------------------------------------------------
+
+(define (update-snake)
+  (shift-body)
+  (advance-head)
+  (eat-food)
+
+  ; handle player input
+  (when (or (and (positive? snake-w) (r:btn-left))
+            (and (negative? snake-w) (r:btn-right)))
+    (turn-snake)))
 
 ;; ----------------------------------------------------
 
 (define (draw-score)
-  (color 7)
-  (text 2 2 (format "Score: ~a" snake-score))
-
-  (when (> snake-health 0)
-    (color (cond
-             [(< snake-health 10) 8]
-             [(< snake-health 20) 9]
-             [(< snake-health 30) 10]
-             [else 11]))
-    
-    ; draw the health bar
-    (rect 0 (- (height) 3) (/ (* snake-health (width)) 60) 3 #:fill #t)))
+  (r:color 7)
+  (r:text 2 2 snake-score)
+  (r:color 10)
+  (r:text (/ (r:width) 2) 2 hi-score))
 
 ;; ----------------------------------------------------
 
-(define (control-snake)
-  (when (or (and (> snake-angular-vel 0) (btn-left))
-            (and (< snake-angular-vel 0) (btn-right)))
-    (set! snake-angular-vel (- snake-angular-vel))))
+(define (test-collision)
+  (let ([x (snake-x)]
+        [y (snake-y)]
+        [r (* snake-size snake-size)])
+    (for/or ([seg (snake-segments)])
+      (match seg
+        [(list sx sy rest ...)
+         (let ([dx (- sx x)]
+               [dy (- sy y)])
+           (< (+ (* dx dx) (* dy dy)) r))]))))
 
 ;; ----------------------------------------------------
 
-(define (setup)
-  (set! snake-growth 8)
-  (set! snake-length 0)
-  (set! snake-score 0)
-  (set! snake-health 60)
-  (set! snake-x 64)
-  (set! snake-y 64)
-  (set! snake-angle 0.0)
-  (set! snake-angular-vel pi)
-  (set! snake-body null)
-  (set! snake-food (for/list ([i (range 10)])
-                     (random-food))))
+(define (game-over)
+  (r:cls)
+  (r:color 7)
+
+  ; update the high score
+  (set! hi-score (max hi-score snake-score))
+
+  ; draw game over stats
+  (let ([x (- (/ (r:width) 2) 20)]
+        [y (- (/ (r:height) 2) 20)])
+    (r:text x y "GAME OVER")
+    (r:color 9)
+    (r:text x (+ y 12) (format "Score: ~a" snake-score))
+    (r:color 10)
+    (r:text x (+ y 20) (format "HI Score: ~a" hi-score))
+    (r:color 6)
+    (r:text x (+ y 32) "Press START"))
+
+  (when (r:btn-start)
+    (new-game)
+    (r:goto game-loop)))
 
 ;; ----------------------------------------------------
 
-(define (snake-collide)
-  (let ([n (+ snake-growth 4)])
-    (if (< snake-length n)
-        #f
-        (for/or ([body (drop snake-body n)])
-          (let ([x (first body)]
-                [y (second body)])
-            (and (<= (- snake-x 1) x (+ snake-x 1))
-                 (<= (- snake-y 1) y (+ snake-y 1))))))))
+(define (game-loop)
+  (r:cls)
 
-;; ----------------------------------------------------
-
-(define (game-over?)
-  (if (or (<= snake-health 0) (snake-collide))
+  ; per frame processing
+  (if (test-collision)
+      (r:goto game-over)
       (begin
-        (color 7)
-        (text 47 50 "GAME OVER")
-        (color 10)
-        (text 47 58 snake-score)
+        (update-snake)
+        (draw-food)
+        (draw-snake)
+        (draw-score)))
 
-        ; allow restarting the game
-        (wait btn-start)
-        (setup))
-      #f))
+  ; quit?
+  (when (r:btn-quit)
+    (r:quit)))
 
 ;; ----------------------------------------------------
 
 (define (new-game)
-  (setup)
+  (set! snake-cx (/ (r:width) 2))
+  (set! snake-cy (/ (r:height) 2))
+  (set! snake-angle 0.0)
+  (set! snake-w pi)
+  (set! snake-health 60)
+  (set! snake-score 0)
+  (set! snake-body null)
+  (set! snake-length 0)
+  (set! snake-segment-length 5)
 
-  ; game loop
-  (λ ()
-    (cls)
+  ; grow the snake a few segments
+  (grow-snake)
 
-    ; per frame processing
-    (unless (game-over?)
-      (advance-snake)
-      (draw-score)
-      (draw-food)
-      (draw-snake)
-      (control-snake))
-
-    ; quit?
-    (when (btn-quit)
-      (quit))))
+  ; spawn the initial food batch
+  (set! food (for/list ([i (range 10)])
+               (random-pos))))
 
 ;; ----------------------------------------------------
 
 (define (play)
-  (run (new-game) 128 128 #:title "R-cade: Snake"))
+  (r:run game-loop 120 120 #:init new-game #:title "R-cade: Snake"))
 
 ;; ----------------------------------------------------
 

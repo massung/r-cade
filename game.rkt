@@ -139,6 +139,9 @@ All rights reserved.
   (unless scale
     (set! scale (discover-good-scale pixels-wide pixels-high)))
 
+  ; perform a major collect right before starting
+  (collect-garbage)
+  
   ; set the video mode for the window
   (let ([mode (make-sfVideoMode (* pixels-wide scale) (* pixels-high scale) 32)])
 
@@ -210,7 +213,7 @@ All rights reserved.
          (λ ()
            (when init
              (init))
-
+           
            ; defaults
            (cls)
            (color 7)
@@ -219,12 +222,18 @@ All rights reserved.
            (when (shader)
              (let ([size (make-sfGlslVec2 (exact->inexact (width))
                                           (exact->inexact (height)))])
-               (sfShader_setVec2Uniform (shader) "resolution" size))))
+               (sfShader_setVec2Uniform (shader) "resolution" size)))
+
+           ; process one frame initially to avoid skips
+           (process-frametime))
         
          ; main game loop
          (λ ()
            (do () [(not (sfRenderWindow_isOpen (window)))]
              (sync)
+
+             ; perform a small garbage collect
+             (collect-garbage 'minor)
 
              ; run main game loop
              ((game-loop))))
