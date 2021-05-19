@@ -143,11 +143,16 @@
 ;; ----------------------------------------------------
 
 (define (draw-food)
-  (r:color 8)
+  (r:color 14)
   (for ([pos food])
     (match pos
       [(list x y)
-       (r:circle x y food-size #:fill #t)])))
+       (r:draw (- x 1) (- y 1) '(#x40 #xe0 #x40))])))
+
+;; ----------------------------------------------------
+
+(define (increase-health)
+  (set! snake-health (min 60 (+ snake-health 2))))
 
 ;; ----------------------------------------------------
 
@@ -171,6 +176,7 @@
 
       ; grow the snake and spawn new food to replace it
       (let ([new-food (for/list ([_ eaten])
+                        (increase-health)
                         (grow-snake 50)
                         (r:play-sound yum)
                         (random-pos))])
@@ -183,10 +189,26 @@
   (advance-head)
   (eat-food)
 
+  ; lose health
+  (set! snake-health (- snake-health (r:frametime)))
+
   ; handle player input
   (when (or (and (positive? snake-w) (r:btn-left))
             (and (negative? snake-w) (r:btn-right)))
     (turn-snake)))
+
+;; ----------------------------------------------------
+
+(define (draw-health)
+  (r:color (cond
+             [(< snake-health 10) 8]
+             [(< snake-health 30) 10]
+             [else 11]))
+
+  ; draw the health box
+  (let ([x (- (/ (r:width) 2) (/ snake-health 2))]
+        [y (- (r:height) 2)])
+    (r:rect x y snake-health 2 #:fill #t)))
 
 ;; ----------------------------------------------------
 
@@ -239,10 +261,11 @@
   (r:cls)
 
   ; per frame processing
-  (if (test-collision)
+  (if (or (test-collision) (negative? snake-health))
       (r:goto game-over)
       (begin
         (update-snake)
+        (draw-health)
         (draw-food)
         (draw-snake)
         (draw-score)))
