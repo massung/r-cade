@@ -16,7 +16,7 @@
 
 ;; ----------------------------------------------------
 
-(define hi-score 1000)
+(define hi-score 400)
 
 ;; ----------------------------------------------------
 
@@ -90,9 +90,9 @@
 
 ;; ----------------------------------------------------
 
-(define (draw-snake)
-  (draw-snake-body)
-  (draw-snake-head))
+(define (draw-snake [dead #f])
+  (draw-snake-body (if dead 8 3))
+  (draw-snake-head (if dead 14 11)))
 
 ;; ----------------------------------------------------
 
@@ -190,7 +190,7 @@
   (eat-food)
 
   ; lose health
-  (set! snake-health (- snake-health (r:frametime)))
+  (set! snake-health (- snake-health (* 2 (r:frametime))))
 
   ; handle player input
   (when (or (and (positive? snake-w) (r:btn-left))
@@ -206,9 +206,9 @@
              [else 11]))
 
   ; draw the health box
-  (let ([x (- (/ (r:width) 2) (/ snake-health 2))]
+  (let ([x (- (/ (r:width) 2)snake-health)]
         [y (- (r:height) 2)])
-    (r:rect x y snake-health 2 #:fill #t)))
+    (r:rect x y (* snake-health 2) 2 #:fill #t)))
 
 ;; ----------------------------------------------------
 
@@ -235,21 +235,18 @@
 
 (define (game-over)
   (r:cls)
-  (r:color 7)
 
-  ; update the high score
-  (set! hi-score (max hi-score snake-score))
+  ; draw the dead snake in the background
+  (draw-score)
+  (draw-snake #t)
 
   ; draw game over stats
   (let ([x (- (/ (r:width) 2) 20)]
         [y (- (/ (r:height) 2) 20)])
+    (r:color 7)
     (r:text x y "GAME OVER")
-    (r:color 9)
-    (r:text x (+ y 12) (format "Score: ~a" snake-score))
-    (r:color 10)
-    (r:text x (+ y 20) (format "HI Score: ~a" hi-score))
-    (r:color 6)
-    (r:text x (+ y 32) "Press START"))
+    (r:color 11)
+    (r:text x (+ y 10) "Press START"))
 
   (when (r:btn-start)
     (new-game)
@@ -265,6 +262,11 @@
       (r:goto game-over)
       (begin
         (update-snake)
+
+        ; update the high score
+        (set! hi-score (max hi-score snake-score))
+
+        ; draw everything
         (draw-health)
         (draw-food)
         (draw-snake)
