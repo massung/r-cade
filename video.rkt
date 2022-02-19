@@ -93,7 +93,8 @@ All rights reserved.
 
     ; set the scale in the shader
     (when (shader)
-      (sfShader_setFloatUniform (shader) "scale" scale))
+      (sfShader_setFloatUniform (shader) "time" time)
+      #;(sfShader_setFloatUniform (shader) "scale" scale))
 
     ; use the crt shader; may be null
     (set-sfRenderStates-shader! (render-state) (shader))

@@ -218,8 +218,8 @@ All rights reserved.
            (cls)
            (color 7)
 
-           ; set shader uniforms
-           (when (shader)
+           ; set shader global uniforms
+           #;(when (shader)
              (let ([size (make-sfGlslVec2 (exact->inexact (width))
                                           (exact->inexact (height)))])
                (sfShader_setVec2Uniform (shader) "resolution" size)))
