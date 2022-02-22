@@ -9,7 +9,7 @@ All rights reserved.
 
 |#
 
-(require csfml)
+(require raylib)
 
 ;; ----------------------------------------------------
 
@@ -17,18 +17,18 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define framerate (make-parameter #f))
 (define frame (make-parameter #f))
-(define frameclock (make-parameter #f))
+(define paused (make-parameter #f))
 
 ;; ----------------------------------------------------
 
-(define frametime (make-parameter #f))
-(define gametime (make-parameter #f))
+(define framerate GetFPS)
+(define frametime GetFrameTime)
+(define gametime GetTime)
 
 ;; ----------------------------------------------------
 
-(define (timer time #:loop [loop #f])
+(define (timer time [loop #f])
   (let ([this time])
     (λ (#:reset [reset #f])
       (set! this (if reset time (- this (frametime))))
@@ -40,17 +40,9 @@ All rights reserved.
                 ; reset if looping
                 (when (and loop expired)
                   (set! this time)))))))
-  
+
 ;; ----------------------------------------------------
 
-(define (process-frametime)
-  (let* ([elapsed (sfClock_getElapsedTime (frameclock))]
-         [delta (- (/ (framerate)) (sfTime_asSeconds elapsed))])
-    (unless (< delta 0.0)
-      (sleep delta)))
-
-  ; update frametime, gametime, frame, and reset the frame clock
-  (frametime (sfTime_asSeconds (sfClock_getElapsedTime (frameclock))))
-  (gametime (+ (gametime) (frametime)))
-  (frame (+ (frame) 1))
-  (sfClock_restart (frameclock)))
+(define (update-frame)
+  (unless (paused)
+    (frame (+ (frame) 1))))

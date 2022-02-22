@@ -9,8 +9,12 @@ All rights reserved.
 
 |#
 
-(require csfml)
+(require ffi/unsafe)
 (require racket/match)
+
+;; ----------------------------------------------------
+
+(require raylib)
 
 ;; ----------------------------------------------------
 
@@ -23,85 +27,56 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define window (make-parameter #f))
-(define texture (make-parameter #f))
-(define sprite (make-parameter #f))
+(define target (make-parameter #f))
 (define width (make-parameter #f))
 (define height (make-parameter #f))
 (define shader (make-parameter #f))
-(define render-state (make-parameter #f))
 
 ;; ----------------------------------------------------
 
-(define bg (sfColor_fromRGBA #x10 #x10 #x18 #xff))
+(define bg (make-Color #x10 #x10 #x18 #xff))
 
 ;; ----------------------------------------------------
 
-(define (hide-mouse)
-  (sfRenderWindow_setMouseCursorVisible (window) #f))
+(define hide-mouse HideCursor)
+(define show-mouse ShowCursor)
 
 ;; ----------------------------------------------------
 
-(define (show-mouse)
-  (sfRenderWindow_setMouseCursorVisible (window) #t))
-
-;; ----------------------------------------------------
-
-(define (resize event)
-  (let ([view (sfRenderWindow_getView (window))]
-
-        ; new size from event
-        [w (real->double-flonum (sfSizeEvent-width event))]
-        [h (real->double-flonum (sfSizeEvent-height event))])
-
-    ; update the view to ensure the sprite is centered
-    (sfView_setSize view (make-sfVector2f w h))
-    (sfRenderWindow_setView (window) view)))
+(define uniform-time (malloc _float))
 
 ;; ----------------------------------------------------
 
 (define (flip frame time)
-  (sfRenderTexture_display (texture))
-
-  ; update the sprite
-  (let* ([view (sfRenderWindow_getView (window))]
-         [size (sfRenderWindow_getSize (window))]
-
-         ; dimensions of the window
-         [w (sfVector2u-x size)]
-         [h (sfVector2u-y size)]
+  (let* ([screen-w (GetScreenWidth)]
+         [screen-h (GetScreenHeight)]
 
          ; scale factor for each axis
-         [sx (real->double-flonum (/ w (width)))]
-         [sy (real->double-flonum (/ h (height)))]
+         [sx (real->double-flonum (/ screen-w (width)))]
+         [sy (real->double-flonum (/ screen-h (height)))]
 
-         ; square scaling factor
-         [base (min sx sy)]
-         [scale (if (< base 1.0) base (floor base))]
+         ; uniform scaling factor
+         [scale (max (floor (min sx sy)) 1.0)]
 
+         ; width of target
+         [w (* (width) scale)]
+         [h (* (height) scale)]
+         
          ; center of the display
-         [x (* (width) 0.5)]
-         [y (* (height) 0.5)]
+         [x (* w 0.5)]
+         [y (* h 0.5)]
 
-         ; find the center pixel of the window
-         [center (make-sfVector2i (quotient w 2) (quotient h 2))])
+         ; source rectangle - flip y
+         [source (make-Rectangle 0.0 0.0 w (- h))]
+
+         ; destination rectangle
+         [pos (make-Vector2 (- (/ screen-w 2) x) (- (/ screen-h 2) y))])
 
     ; prepare the render sprite
-    (sfSprite_setTexture (sprite) (sfRenderTexture_getTexture (texture)) #t)
-    (sfSprite_setOrigin (sprite) (make-sfVector2f x y))
-    (sfSprite_setScale (sprite) (make-sfVector2f scale scale))
-    (sfSprite_setPosition (sprite) (sfRenderWindow_mapPixelToCoords (window) center #f))
-
-    ; set the scale in the shader
-    (when (shader)
-      (sfShader_setFloatUniform (shader) "time" time)
-      #;(sfShader_setFloatUniform (shader) "scale" scale))
-
-    ; use the crt shader; may be null
-    (set-sfRenderStates-shader! (render-state) (shader))
-  
-    ; render video texture
-    (sfRenderWindow_clear (window) bg)
-    (sfRenderWindow_drawSprite (window) (sprite) (render-state))
-
-    ; present the window
-    (sfRenderWindow_display (window))))
+    (BeginDrawing)
+    (ClearBackground bg)
+    (let ([texture (RenderTexture2D-texture (target))])
+      (BeginShaderMode (shader))
+      (DrawTextureEx texture pos 0.0 scale WHITE)
+      (EndShaderMode))
+    (EndDrawing)))

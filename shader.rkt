@@ -9,8 +9,6 @@ All rights reserved.
 
 |#
 
-(require csfml)
-
 ;; ----------------------------------------------------
 
 (provide (all-defined-out))
@@ -30,41 +28,38 @@ for their hard work!!
 
 |#
 
-;; ----------------------------------------------------
+(define scanline-fragment-shader
+  '("#version 330"
 
-(define basic-vertex-shader
-  (string-append "void main() {"
-                 "    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
-                 "    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;"
-                 "}"))
+    ; type precision
+    "precision mediump float;"
 
-;; ----------------------------------------------------
-
-(define crt-fragment-shader
-  (string-append "uniform sampler2D texture;"
-                 "uniform vec2 resolution;"
-                 "uniform float scale;"
-                 "uniform float time;"
-
-                 "float fmin = 0.25;"
-                 
-                 ; entry point
-                 "void main() {"
-                 "    vec2 st = gl_FragCoord.xy;"
-
-                 ; color of pixel and scanline
-                 "    vec3 pixel = texture2D(texture, gl_TexCoord[0].xy).rgb;"
-                 "    vec4 scan = vec4(st.x, st.y, abs(sin(time)), 1.0);"
-
-                 ; every 3rd pixel should be a scanline
-                 "    float fmod = mod(scan.y, 3.0);"
-                 "    float fstep = fmin + (1.0 - fmin) * fmod;"
-
-                 ; alpha the color by the scanline
-                 "    gl_FragColor = vec4(pixel.rgb, fstep);"
-                 "}"))
+    ; from default vertex shader
+    "in vec2 fragTexCoord;"
+    "in vec4 fragColor;"
+    "out vec4 finalColor;"
+    
+    ; input values from raylib
+    "uniform sampler2D texture0;"
+    "uniform vec4 colDiffuse;"
+    
+    ; custom inputs
+    "uniform float time;"
+    
+    ; entry point
+    "void main() {"
+    "    vec2 uv = vec2(fragTexCoord.x, -fragTexCoord.y);"
+    "    vec3 pixel = texture(texture0, uv).rgb;"
+    
+    ; every 3rd pixel should be a scanline
+    "    float fmin = 0.25;"
+    "    float fmod = mod(gl_FragCoord.y, 3.0);"
+    "    float fstep = fmin + (1.0 - fmin) * fmod;"
+    
+    ; alpha the color by the scanline
+    "    finalColor = vec4(pixel, fstep);"
+    "}"))
 
 ;; ----------------------------------------------------
 
-(define vertex-shader basic-vertex-shader)
-(define fragment-shader crt-fragment-shader)
+(define fragment-shader (string-join scanline-fragment-shader "\n"))

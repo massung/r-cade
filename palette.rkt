@@ -11,7 +11,10 @@ All rights reserved.
 
 (require ffi/cvector)
 (require ffi/unsafe)
-(require csfml)
+
+;; ----------------------------------------------------
+
+(require raylib)
 
 ;; ----------------------------------------------------
 
@@ -24,22 +27,22 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define basic-palette
-  (vector (sfColor_fromRGBA #x00 #x00 #x00 #xff)
-          (sfColor_fromRGBA #x1d #x2b #x53 #xff)
-          (sfColor_fromRGBA #x7e #x25 #x53 #xff)
-          (sfColor_fromRGBA #x00 #x87 #x51 #xff)
-          (sfColor_fromRGBA #xab #x52 #x36 #xff)
-          (sfColor_fromRGBA #x5f #x57 #x4f #xff)
-          (sfColor_fromRGBA #xc2 #xc3 #xc7 #xff)
-          (sfColor_fromRGBA #xff #xf1 #xe8 #xff)
-          (sfColor_fromRGBA #xff #x00 #x4d #xff)
-          (sfColor_fromRGBA #xff #xa3 #x00 #xff)
-          (sfColor_fromRGBA #xff #xec #x27 #xff)
-          (sfColor_fromRGBA #x00 #xe4 #x36 #xff)
-          (sfColor_fromRGBA #x29 #xad #xff #xff)
-          (sfColor_fromRGBA #x83 #x76 #x9c #xff)
-          (sfColor_fromRGBA #xff #x77 #xab #xff)
-          (sfColor_fromRGBA #xff #xcc #xaa #xff)))
+  (vector (make-Color #x00 #x00 #x00 #xff)
+          (make-Color #x1d #x2b #x53 #xff)
+          (make-Color #x7e #x25 #x53 #xff)
+          (make-Color #x00 #x87 #x51 #xff)
+          (make-Color #xab #x52 #x36 #xff)
+          (make-Color #x5f #x57 #x4f #xff)
+          (make-Color #xc2 #xc3 #xc7 #xff)
+          (make-Color #xff #xf1 #xe8 #xff)
+          (make-Color #xff #x00 #x4d #xff)
+          (make-Color #xff #xa3 #x00 #xff)
+          (make-Color #xff #xec #x27 #xff)
+          (make-Color #x00 #xe4 #x36 #xff)
+          (make-Color #x29 #xad #xff #xff)
+          (make-Color #x83 #x76 #x9c #xff)
+          (make-Color #xff #x77 #xab #xff)
+          (make-Color #xff #xcc #xaa #xff)))
 
 ;; ----------------------------------------------------
 
@@ -48,4 +51,4 @@ All rights reserved.
         [r (bitwise-and red   #xff)]
         [g (bitwise-and green #xff)]
         [b (bitwise-and blue  #xff)])
-    (vector-set! (palette) n (sfColor_fromRGBA r g b #xff))))
+    (vector-set! (palette) n (make-Color r g b #xff))))

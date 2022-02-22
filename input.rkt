@@ -9,21 +9,20 @@ All rights reserved.
 
 |#
 
-(require csfml)
 (require racket/match)
+(require syntax/parse)
+
+;; ----------------------------------------------------
+
+(require raylib)
 
 ;; ----------------------------------------------------
 
 (require "time.rkt")
-(require "video.rkt")
 
 ;; ----------------------------------------------------
 
 (provide (all-defined-out))
-
-;; ----------------------------------------------------
-
-(define buttons (make-parameter #f))
 
 ;; ----------------------------------------------------
 
@@ -32,32 +31,33 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (btn? b [hold #f] [rate #f])
-  (let ([x (hash-ref (buttons) b #f)])
-    (and x (let ([frames-held (- (frame) x 1)])
-             (cond
-               [(zero? frames-held) #t]
-
-               ; allow button hold, inifite repeat
-               [(not rate) hold]
-
-               ; has it been held for a multiple of the rate?
-               [else (let ([n (quotient (framerate) rate)])
-                       (zero? (remainder frames-held n)))])))))
+(define (update-mouse-pos)
+  (mouse-x (GetMouseX))
+  (mouse-y (GetMouseY)))
 
 ;; ----------------------------------------------------
 
-(define (btn-start [hold #f] [rate #f]) (btn? 'sfKeyEnter hold rate))
-(define (btn-select [hold #f] [rate #f]) (btn? 'sfKeySpace hold rate))
-(define (btn-quit [hold #f] [rate #f]) (btn? 'sfKeyEscape hold rate))
-(define (btn-break [hold #f] [rate #f]) (btn? 'sfKeyF8 hold rate))
-(define (btn-z [hold #f] [rate #f]) (btn? 'sfKeyZ hold rate))
-(define (btn-x [hold #f] [rate #f]) (btn? 'sfKeyX hold rate))
-(define (btn-up [hold #f] [rate #f]) (btn? 'sfKeyUp hold rate))
-(define (btn-down [hold #f] [rate #f]) (btn? 'sfKeyDown hold rate))
-(define (btn-right [hold #f] [rate #f]) (btn? 'sfKeyRight hold rate))
-(define (btn-left [hold #f] [rate #f]) (btn? 'sfKeyLeft hold rate))
-(define (btn-mouse [hold #f] [rate #f]) (btn? 'sfMouseLeft hold rate))
+(define-syntax (define-btn stx)
+  (syntax-case stx ()
+    [(_ btn id pressed? down?)
+     #'(define (btn [hold? #f])
+         ((if hold? down? pressed?) id))]))
+
+;; ----------------------------------------------------
+
+(define-btn btn-start 'KEY_ENTER IsKeyPressed IsKeyDown)
+(define-btn btn-select 'KEY_SPACE IsKeyPressed IsKeyDown)
+(define-btn btn-quit 'KEY_ESCAPE IsKeyPressed IsKeyDown)
+(define-btn btn-z 'KEY_Z IsKeyPressed IsKeyDown)
+(define-btn btn-x 'KEY_X IsKeyPressed IsKeyDown)
+(define-btn btn-up 'KEY_UP IsKeyPressed IsKeyDown)
+(define-btn btn-down 'KEY_DOWN IsKeyPressed IsKeyDown)
+(define-btn btn-right 'KEY_RIGHT IsKeyPressed IsKeyDown)
+(define-btn btn-left 'KEY_LEFT IsKeyPressed IsKeyDown)
+
+;; ----------------------------------------------------
+
+(define-btn btn-mouse 'MOUSE_BUTTON_LEFT IsMouseButtonPressed IsMouseButtonDown)
 
 ;; ----------------------------------------------------
 
@@ -66,38 +66,30 @@ All rights reserved.
       (btn-select)
       (btn-quit)
       (btn-z)
-      (btn-x)))
+      (btn-x)
+      (btn-mouse)))
 
 ;; ----------------------------------------------------
 
-(define (action btn [hold #f] [rate #f])
-  (λ () (btn hold rate)))
+(define (action pred [rate #f])
+  (let ([last #f])
+    (λ ()
+      (let ([time (GetTime)]
+            [pressed? (pred rate)])
+        (and pressed? (cond
+                        [(or (not last) (boolean? rate))
+                         (begin0 #t (set! last time))]
+
+                        ;; has enough time elapsed since the last fire?
+                        [(> (- time last) (/ 1.0 rate))
+                         (begin0 #t (set! last time))]
+
+                        ;; not enough time elapsed
+                        [else #f]))))))
 
 ;; ----------------------------------------------------
 
-(define (press-button btn [reset #f])
-  (let ([update (λ (since-frame)
-                  (or (and (not reset) since-frame) (frame)))])
-    (hash-update! (buttons) btn update #f)))
-
-;; ----------------------------------------------------
-
-(define (release-button btn)
-  (hash-set! (buttons) btn #f))
-
-;; ----------------------------------------------------
-
-(define (on-key-pressed event)
-  (press-button (sfKeyEvent-code event)))
-
-;; ----------------------------------------------------
-
-(define (on-key-released event)
-  (release-button (sfKeyEvent-code event)))
-
-;; ----------------------------------------------------
-
-(define (on-mouse-moved event)
+#;(define (on-mouse-moved event)
   (let* ([x (sfMouseMoveEvent-x event)]
          [y (sfMouseMoveEvent-y event)]
 
@@ -112,13 +104,3 @@ All rights reserved.
          [point (sfTransform_transformPoint inv coord)])
     (mouse-x (inexact->exact (floor (sfVector2f-x point))))
     (mouse-y (inexact->exact (floor (sfVector2f-y point))))))
-
-;; ----------------------------------------------------
-
-(define (on-mouse-clicked event)
-  (press-button (sfMouseButtonEvent-button event)))
-
-;; ----------------------------------------------------
-
-(define (on-mouse-released event)
-  (release-button (sfMouseButtonEvent-button event)))

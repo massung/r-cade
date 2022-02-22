@@ -10,7 +10,6 @@ All rights reserved.
 |#
 
 (require racket/match)
-(require csfml)
 
 ;; ----------------------------------------------------
 

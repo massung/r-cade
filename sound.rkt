@@ -11,7 +11,6 @@ All rights reserved.
 
 (require ffi/cvector)
 (require ffi/unsafe)
-(require csfml)
 
 ;; ----------------------------------------------------
 

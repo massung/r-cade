@@ -9,8 +9,11 @@ All rights reserved.
 
 |#
 
-(require csfml)
 (require ffi/unsafe/custodian)
+
+;; ----------------------------------------------------
+
+(require raylib)
 
 ;; ----------------------------------------------------
 
@@ -20,8 +23,8 @@ All rights reserved.
 (require "font.rkt")
 (require "draw.rkt")
 (require "palette.rkt")
-(require "audio.rkt")
-(require "sound.rkt")
+;(require "audio.rkt")
+;(require "sound.rkt")
 (require "time.rkt")
 
 ;; ----------------------------------------------------
@@ -31,100 +34,54 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (quit)
-  (when (and (window) (sfRenderWindow_isOpen (window)))
-    (sfRenderWindow_close (window))))
+  (CloseWindow))
 
 ;; ----------------------------------------------------
 
-(define game-loop (make-parameter (λ ()
-                                    (cls)
-                                    (when (btn-quit)
-                                      (quit)))))
+(define game-loop
+  (make-parameter (λ ()
+                    (cls)
+                    (when (btn-quit)
+                      (quit)))))
 
 ;; ----------------------------------------------------
 
-(define (process-events)
-  (do ([event (sfRenderWindow_pollEvent (window))
-              (sfRenderWindow_pollEvent (window))])
-    ((not event))
-
-    ; every once in a while SFML returns an invalid event
-    (with-handlers ([exn:fail? (const (void))])
-      (case (sfEvent-type event)
-        ; window events
-        ('sfEvtClosed (sfRenderWindow_close (window)))
-        ('sfEvtResized (resize (sfEvent-size event)))
-        
-        ; key events
-        ('sfEvtKeyPressed
-         (on-key-pressed (sfEvent-key event)))
-        ('sfEvtKeyReleased
-         (on-key-released (sfEvent-key event)))
-
-        ; text entered
-        ;('sfEvtTextEntered
-        ; (on-user-input (sfEvent-text event)))
-        
-        ; mouse events
-        ('sfEvtMouseMoved
-         (on-mouse-moved (sfEvent-mouseMove event)))
-        ('sfEvtMouseButtonPressed
-         (on-mouse-clicked (sfEvent-mouseButton event)))
-        ('sfEvtMouseButtonReleased
-         (on-mouse-released (sfEvent-mouseButton event)))))))
-
-;; ----------------------------------------------------
-
-(define (goto update)
-  (game-loop update))
+(define goto game-loop)
 
 ;; ----------------------------------------------------
 
 (define (sync)
-  (process-events)
-  (play-queued-sounds)
+  (update-frame)
+  (update-mouse-pos)
 
   ; render vram
-  (flip (frame) (gametime))
-
-  ; wait for the next frame
-  (process-frametime))
+  (flip (frame) (gametime)))
 
 ;; ----------------------------------------------------
 
 (define (wait [until btn-any])
-  (do () [(or (until) (not (sfRenderWindow_isOpen (window)))) #f]
+  (do () [(or (until) (WindowShouldClose)) #f]
     (sync)))
 
 ;; ----------------------------------------------------
 
-(define (discover-good-scale w h)
-  (let* ([mode (sfVideoMode_getDesktopMode)]
-
-         ; size of the display the window will be on
-         [screen-w (sfVideoMode-width mode)]
-         [screen-h (sfVideoMode-height mode)]
-
-         ; scale to fit ~60% of the screen
-         [max-w (inexact->exact (floor (* screen-w 0.6)))]
-         [max-h (inexact->exact (floor (* screen-h 0.6)))]
-
-         ; scale to fit ~60% of the screen
-         [scale-x (quotient max-w w)]
-         [scale-y (quotient max-h h)])
-    (inexact->exact (max (min scale-x scale-y) 1))))
+(define (monitor-size)
+  (let ([monitor (GetCurrentMonitor)])
+    (values (GetMonitorWidth monitor)
+            (GetMonitorHeight monitor))))
 
 ;; ----------------------------------------------------
 
-(define (break-repl exn)
-  (read-eval-print-loop)
-  ;(let ([r-read (λ ()
-  ;                (display "R-CADE> ")
-  ;                (let ([in (current-get-interaction-input-port)])
-  ;                  ((current-read-interaction) (object-name in) in)))])
-  ;  (parameterize ([current-prompt-read r-read])
-  ;    (read-eval-print-loop))))
-  )
+(define (resize-window pixels-wide pixels-high scale)
+  (let-values ([(screen-w screen-h) (monitor-size)])
+    (let* ([w (inexact->exact (* pixels-wide scale))]
+           [h (inexact->exact (* pixels-high scale))]
+
+           ; center the window
+           [x (inexact->exact (- (/ screen-w 2) (* w 0.5)))]
+           [y (inexact->exact (- (/ screen-h 2) (* h 0.5)))])
+      (SetWindowSize w h)
+      (SetWindowPosition x y))))
 
 ;; ----------------------------------------------------
 
@@ -135,115 +92,93 @@ All rights reserved.
              #:scale [scale #f]
              #:fps [fps 60]
              #:shader [effect #t]
-             #:title [title "R-cade"])
-  (unless scale
-    (set! scale (discover-good-scale pixels-wide pixels-high)))
-
-  ; perform a major collect right before starting
-  (collect-garbage)
+             #:title [title "R-cade"]
+             #:trace-log [log-level 'LOG_NONE])
+  (InitWindow pixels-wide pixels-high title)
+  (SetWindowState 'FLAG_WINDOW_RESIZABLE)
+  (SetTargetFPS fps)
+  (SetTraceLogLevel log-level)
   
-  ; set the video mode for the window
-  (let ([mode (make-sfVideoMode (* pixels-wide scale) (* pixels-high scale) 32)])
+  ; try and discover the scale
+  (unless scale
+    (let-values ([(w h) (monitor-size)])
+      (let ([scale-x (quotient (* w 0.6) pixels-wide)]
+            [scale-y (quotient (* h 0.6) pixels-high)])
+        (set! scale (max (min scale-x scale-y 3) 1)))))
 
-    ; initialize global state
-    (parameterize
-        ([window (sfRenderWindow_create mode title '(sfDefaultStyle) #f)]
+  ; resize the window accordingly
+  (resize-window pixels-wide pixels-high scale)
 
-         ; video memory
-         [texture (sfRenderTexture_create pixels-wide pixels-high #f)]
-         [sprite (sfSprite_create)]
+  ;; create the sprite masks
+  (make-sprite-masks)
 
-         ; create a fragment shader for fullscreen rendering
-         [shader (and effect (sfShader_createFromMemory vertex-shader
-                                                        #f
-                                                        fragment-shader))]
+  ; initialize global state
+  (parameterize
+      ([target (LoadRenderTexture pixels-wide pixels-high)]
 
-         ; default render state
-         [render-state (make-sfRenderStates sfBlendAlpha
-                                            sfTransform_Identity
-                                            #f
-                                            #f)]
+       ; create a fragment shader for fullscreen rendering
+       [shader (and effect (LoadShaderFromMemory #f fragment-shader))]
 
-         ; default palette
-         [palette (for/vector ([c basic-palette]) c)]
+       ; default palette
+       [palette (for/vector ([c basic-palette]) c)]
 
-         ; default font
-         [font basic-font]
+       ; default font
+       [font basic-font]
 
-         ; sound mixer
-         [sounds (create-sound-channels 8)]
-         [sound-queue null]
+       ; playfield size
+       [width pixels-wide]
+       [height pixels-high]
 
-         ; music channel and riff pointer
-         [music-channel #f]
-         [music-riff #f]
+       ; mouse position
+       [mouse-x 0]
+       [mouse-y 0]
 
-         ; playfield size
-         [width pixels-wide]
-         [height pixels-high]
+       ; frame
+       [frame 0]
+       
+       ; initial game state loop
+       [game-loop initial-game-loop])
 
-         ; input buttons
-         [buttons (make-hash)]
+    ; attempt to close the windw on shutdown (or re-run)
+    (let ([v (register-custodian-shutdown (target)
+                                          (λ (w) (CloseWindow))
+                                          #:at-exit? #t)])
+      (dynamic-wind
 
-         ; mouse position
-         [mouse-x 0]
-         [mouse-y 0]
-
-         ; frame
-         [framerate fps]
-         [frame 0]
-
-         ; delta frame time, total game time, and framerate clock
-         [frametime 0.0]
-         [gametime 0.0]
-         [frameclock (sfClock_create)]
-
-         ; initial game state loop
-         [game-loop initial-game-loop])
-
-      ; attempt to close the windw on shutdown (or re-run)
-      (let ([v (register-custodian-shutdown (window)
-                                            (λ (w)
-                                              (when w
-                                                (sfRenderWindow_close w)))
-                                            #:at-exit? #t)])
-        (dynamic-wind
-
-         ; initialization
-         (λ ()
-           (when init
-             (init))
+       ; initialization
+       (λ ()
+         (when init
+           (init))
            
-           ; defaults
-           (cls)
-           (color 7)
-
-           ; set shader global uniforms
-           #;(when (shader)
-             (let ([size (make-sfGlslVec2 (exact->inexact (width))
-                                          (exact->inexact (height)))])
-               (sfShader_setVec2Uniform (shader) "resolution" size)))
-
-           ; process one frame initially to avoid skips
-           (process-frametime))
+         ; defaults
+         (BeginTextureMode (target))
+         (cls)
+         (color 7)
+         (EndTextureMode))
         
-         ; main game loop
-         (λ ()
-           (do () [(not (sfRenderWindow_isOpen (window)))]
-             (sync)
+       ; main game loop
+       (λ ()
+         (let loop ()
+           (sync)
 
-             ; perform a small garbage collect
-             (collect-garbage 'minor)
+           ; run main game loop
+           (BeginTextureMode (target))
+           ((game-loop))
+           (EndTextureMode)
+ 
+           ; perform a small garbage collect
+           (collect-garbage 'minor)
 
-             ; run main game loop
-             ((game-loop))))
+           ; run until the game quits
+           (unless (WindowShouldClose)
+             (loop))))
 
          ; clean-up
          (λ ()
-           (sfRenderWindow_close (window))
+           (CloseWindow)
 
            ; stop playing sounds and music
-           (stop-music)
-           (stop-sound)
+           ;(StopMusicStream)
+           ;(stop-sound)
            
-           (unregister-custodian-shutdown (window) v)))))))
+           (unregister-custodian-shutdown (target) v))))))

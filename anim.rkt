@@ -9,7 +9,7 @@ All rights reserved.
 
 |#
 
-(require csfml)
+(require raylib)
 
 ;; ----------------------------------------------------
 
@@ -25,3 +25,4 @@ All rights reserved.
 
 (define (anim-sprite sprites time #:fps [fps 8] #:loop [loop #t])
   (sequence-ref sprites (anim-frame sprites time #:fps fps #:loop loop)))
+ 

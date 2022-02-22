@@ -10,7 +10,10 @@ All rights reserved.
 |#
 
 (require ffi/unsafe)
-(require csfml)
+
+;; ----------------------------------------------------
+
+(require raylib)
 
 ;; ----------------------------------------------------
 
@@ -21,9 +24,9 @@ All rights reserved.
 (require "font.rkt")
 (require "draw.rkt")
 (require "voice.rkt")
-(require "sound.rkt")
-(require "audio.rkt")
-(require "music.rkt")
+;(require "sound.rkt")
+;(require "audio.rkt")
+;(require "music.rkt")
 (require "anim.rkt")
 (require "time.rkt")
 
@@ -42,10 +45,10 @@ All rights reserved.
  gametime
  width
  height
- action
  timer
 
  ; input
+ action
  btn-any
  btn-start
  btn-select
@@ -86,7 +89,7 @@ All rights reserved.
  ; anim
  anim-frame
  anim-sprite
-
+#|
  ; voice
  (struct-out voice)
  basic-voice
@@ -118,4 +121,6 @@ All rights reserved.
  music-volume
  play-music
  stop-music
- pause-music)
+ pause-music
+|#
+ )

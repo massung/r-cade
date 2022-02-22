@@ -10,7 +10,10 @@ All rights reserved.
 |#
 
 (require ffi/cvector)
-(require csfml)
+
+;; ----------------------------------------------------
+
+(require raylib)
 
 ;; ----------------------------------------------------
 
@@ -71,7 +74,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (stop-sound)
-  (for-each sfSound_stop (sounds))
+  (for-each StopSound (sounds))
 
   ; clear the sound queue so new sounds don't play
   (sound-queue null))
@@ -79,14 +82,14 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (sound-volume vol)
-  (for-each (λ (sound) (sfSound_setVolume sound vol)) (sounds)))
+  (for-each (λ (sound) (SetSoundVolume sound vol)) (sounds)))
 
 ;; ----------------------------------------------------
 
 (define (music-volume vol)
   (let ([chan (music-channel)])
     (when chan
-      (sfMusic_setVolume chan vol))))
+      (SetMusicVolume chan vol))))
 
 ;; ----------------------------------------------------
 
@@ -99,7 +102,7 @@ All rights reserved.
            [len (riff-length riff)]
            [chan (sfMusic_createFromMemory ptr len)])
       (sfMusic_setLoop chan loop)
-      (sfMusic_play chan)
+      (PlayMusicStream chan)
       
       ; set the new riff and channel
       (music-riff riff)
@@ -110,11 +113,11 @@ All rights reserved.
 (define (pause-music [pause #t])
   (let ([chan (music-channel)])
     (when chan
-      ((if pause sfMusic_pause sfMusic_play) chan))))
+      ((if pause PauseMusicStream ResumeMusicStream) chan))))
 
 ;; ----------------------------------------------------
 
 (define (stop-music)
   (let ([chan (music-channel)])
     (when chan
-      (sfMusic_stop chan))))
+      (StopMusicStreams chan))))
