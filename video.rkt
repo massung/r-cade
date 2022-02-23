@@ -9,7 +9,6 @@ All rights reserved.
 
 |#
 
-(require ffi/unsafe)
 (require racket/match)
 
 ;; ----------------------------------------------------
@@ -40,10 +39,6 @@ All rights reserved.
 
 (define hide-mouse HideCursor)
 (define show-mouse ShowCursor)
-
-;; ----------------------------------------------------
-
-(define uniform-time (malloc _float))
 
 ;; ----------------------------------------------------
 

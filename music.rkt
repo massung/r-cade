@@ -13,6 +13,10 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(require raylib)
+
+;; ----------------------------------------------------
+
 (require "riff.rkt")
 (require "sound.rkt")
 (require "voice.rkt")
@@ -20,6 +24,10 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (provide (all-defined-out))
+
+;; ----------------------------------------------------
+
+(struct music% [stream])
 
 ;; ----------------------------------------------------
 
@@ -184,6 +192,10 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define tetris-theme ".--E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-.E4---C---D---B3---C4---A3---Ab---B-E4---C---D---B3--C4--E-A4--Ab---.E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-")
+
+;; ----------------------------------------------------
+
 (struct note [key octave length])
 
 ;; ----------------------------------------------------
@@ -248,17 +260,11 @@ All rights reserved.
         (values (+ offset len) octave)))
 
     ; compile the riff
-    (make-riff samples sample-rate channels bytes-per-sample)))
+    (let ([riff (make-riff samples sample-rate channels bytes-per-sample)])
+      (music% (LoadMusicStreamFromMemory ".wav" (riff-ptr riff) (riff-length riff))))))
 
 ;; ----------------------------------------------------
 
-(define (write-music tune #:tempo bpm #:voice voice)
-  (let* ([tune (music tune #:tempo bpm #:voice voice)])
-    (with-output-to-file "test-music.wav"
-      (λ () (write-bytes tune))
-      #:exists 'replace)))
-
 (define (test)
- (write-music ".--E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-.E4---C---D---B3---C4---A3---Ab---B-E4---C---D---B3--C4--E-A4--Ab---.E4-B3C4D-CB3A-AC4E-DCB3-C4D-E-C-A3-A-.D4-FA-GFE-CE-DCB3-BC4D-E-C-A3-A-"
-              #:tempo 280
-              #:voice (voice triangle-wave adsr-envelope)))
+  (let ([riff (music tetris-theme #:tempo 280 #:voice (voice triangle-wave adsr-envelope))])
+    (save-riff riff "test-music.wav")))

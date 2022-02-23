@@ -113,14 +113,14 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (rect x y w h #:fill? [fill? #f])
-  (if fill?
+(define (rect x y w h #:fill [fill #f])
+  (if fill
       (DrawRectangle x y w h draw-color)
       (DrawRectangleLines x y w h draw-color)))
 
 ;; ----------------------------------------------------
 
-(define (circle x y r #:fill? [fill? #f])
-  (if fill?
+(define (circle x y r #:fill [fill #f])
+  (if fill
       (DrawCircle x y r draw-color)
       (DrawCircleLines x y r draw-color)))

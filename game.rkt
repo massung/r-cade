@@ -23,8 +23,7 @@ All rights reserved.
 (require "font.rkt")
 (require "draw.rkt")
 (require "palette.rkt")
-;(require "audio.rkt")
-;(require "sound.rkt")
+(require "audio.rkt")
 (require "time.rkt")
 
 ;; ----------------------------------------------------
@@ -53,6 +52,7 @@ All rights reserved.
 (define (sync)
   (update-frame)
   (update-mouse-pos)
+  (update-music)
 
   ; render vram
   (flip (frame) (gametime)))
@@ -82,6 +82,12 @@ All rights reserved.
            [y (inexact->exact (- (/ screen-h 2) (* h 0.5)))])
       (SetWindowSize w h)
       (SetWindowPosition x y))))
+
+;; ----------------------------------------------------
+
+(define (shutdown)
+  (StopSoundMulti)
+  (CloseWindow))
 
 ;; ----------------------------------------------------
 
@@ -135,50 +141,44 @@ All rights reserved.
 
        ; frame
        [frame 0]
+
+       ; no playing music
+       [playing-stream #f]
        
        ; initial game state loop
        [game-loop initial-game-loop])
 
     ; attempt to close the windw on shutdown (or re-run)
-    (let ([v (register-custodian-shutdown (target)
-                                          (λ (w) (CloseWindow))
-                                          #:at-exit? #t)])
-      (dynamic-wind
+    (dynamic-wind
 
-       ; initialization
-       (λ ()
-         (when init
-           (init))
-           
-         ; defaults
-         (BeginTextureMode (target))
-         (cls)
-         (color 7)
-         (EndTextureMode))
+     ; initialization
+     (λ ()
+       (when init
+         (init))
+       
+       ; defaults
+       (BeginTextureMode (target))
+       (cls)
+       (color 7)
+       (EndTextureMode))
         
-       ; main game loop
-       (λ ()
-         (let loop ()
-           (sync)
+     ; main game loop
+     (λ ()
+       (let loop ()
+         (sync)
 
-           ; run main game loop
-           (BeginTextureMode (target))
-           ((game-loop))
-           (EndTextureMode)
+         ; run main game loop
+         (BeginTextureMode (target))
+         ((game-loop))
+         (EndTextureMode)
  
-           ; perform a small garbage collect
-           (collect-garbage 'minor)
+         ; perform a small garbage collect
+         (collect-garbage 'minor)
 
-           ; run until the game quits
-           (unless (WindowShouldClose)
-             (loop))))
+         ; run until the game quits
+         (unless (WindowShouldClose)
+           (loop))))
 
-         ; clean-up
-         (λ ()
-           (CloseWindow)
-
-           ; stop playing sounds and music
-           ;(StopMusicStream)
-           ;(stop-sound)
-           
-           (unregister-custodian-shutdown (target) v))))))
+     ; clean-up
+     (λ ()
+       (shutdown)))))

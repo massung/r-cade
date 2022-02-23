@@ -9,16 +9,20 @@ All rights reserved.
 
 |#
 
-(require ffi/cvector)
-(require ffi/unsafe)
+(require raylib)
 
 ;; ----------------------------------------------------
 
+(require "riff.rkt")
 (require "voice.rkt")
 
 ;; ----------------------------------------------------
 
 (provide (all-defined-out))
+
+;; ----------------------------------------------------
+
+(struct sound% [wave sample])
 
 ;; ----------------------------------------------------
 
@@ -31,14 +35,14 @@ All rights reserved.
 
 (define (sound curve duration [voice basic-voice])
   (let* ([count (inexact->exact (ceiling (* duration sample-rate)))]
-         [samples (make-cvector _sint16 count)]
+         [samples (make-vector (* count bytes-per-sample))]
          [instrument (voice-instrument voice)]
          [envelope (voice-envelope voice)])
 
     ; fill sample buffer
-    (for ([n (range count)])
-      (let* ([time (/ n sample-rate)]
-             [u (/ n count)]
+    (for ([n (range 0 (vector-length samples) bytes-per-sample)])
+      (let* ([time (/ n bytes-per-sample sample-rate)]
+             [u (/ n bytes-per-sample count)]
 
              ; frequency and volume of sample
              [freq (curve u)]
@@ -48,12 +52,18 @@ All rights reserved.
              [amp (instrument (* time freq pi 2))]
 
              ; calculate the sample
-             [sample (* half-peak volume amp)])
-        (cvector-set! samples n (inexact->exact (floor sample)))))
+             [sample (inexact->exact (floor (* half-peak volume amp)))]
 
-    ; create a sound buffer from the samples
-    (let ([ptr (cvector-ptr samples)])
-      (sfSoundBuffer_createFromSamples ptr count 1 sample-rate))))
+             ; split the sample into upper and lower bytes
+             [lsb (bitwise-bit-field sample 0 8)]
+             [msb (bitwise-bit-field sample 8 16)])
+        (vector-set! samples (+ n 0) lsb)
+        (vector-set! samples (+ n 1) msb)))
+    
+    ; create a riff from the sound buffer
+    (let* ([riff (make-riff samples sample-rate channels bytes-per-sample)]
+           [wave (LoadWaveFromMemory ".wav" (riff-ptr riff) (riff-length riff))])
+      (sound% wave (LoadSoundFromWave wave)))))
 
 ;; ----------------------------------------------------
 
@@ -66,4 +76,3 @@ All rights reserved.
   (let ([curve (λ (u)
                  (+ start-hz (* (- end-hz start-hz) u)))])
     (sound curve seconds voice)))
-

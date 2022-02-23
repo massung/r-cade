@@ -55,7 +55,7 @@ All rights reserved.
 (define (make-riff u8-samples sample-rate channels bytes-per-sample)
   (let* ([data-size (vector-length u8-samples)]
          [riff-size (+ riff-header-size data-size)]
-         [bytes (malloc _byte riff-size 'atomic-interior)])
+         [bytes (malloc _byte riff-size 'atomic)])
 
     ; copy the default riff header
     (for ([i (in-naturals)]
@@ -83,3 +83,11 @@ All rights reserved.
 
     ; final riff
     (riff bytes riff-size)))
+
+;; ----------------------------------------------------
+
+(define (save-riff riff filename)
+  (let ([write-riff (λ (port)
+                      (for ([i (riff-length riff)])
+                        (write-byte (ptr-ref (riff-ptr riff) _byte i) port)))])
+    (call-with-output-file filename write-riff #:exists 'replace)))

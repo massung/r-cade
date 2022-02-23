@@ -9,11 +9,12 @@ All rights reserved.
 
 |#
 
-(require ffi/unsafe)
+(require raylib)
 
 ;; ----------------------------------------------------
 
-(require raylib)
+(unless (IsAudioDeviceReady)
+  (InitAudioDevice))
 
 ;; ----------------------------------------------------
 
@@ -24,9 +25,9 @@ All rights reserved.
 (require "font.rkt")
 (require "draw.rkt")
 (require "voice.rkt")
-;(require "sound.rkt")
-;(require "audio.rkt")
-;(require "music.rkt")
+(require "sound.rkt")
+(require "audio.rkt")
+(require "music.rkt")
 (require "anim.rkt")
 (require "time.rkt")
 
@@ -89,7 +90,7 @@ All rights reserved.
  ; anim
  anim-frame
  anim-sprite
-#|
+
  ; voice
  (struct-out voice)
  basic-voice
@@ -122,5 +123,4 @@ All rights reserved.
  play-music
  stop-music
  pause-music
-|#
  )
