@@ -81,12 +81,12 @@ All rights reserved.
 
 (define (resize-window pixels-wide pixels-high scale)
   (let-values ([(screen-w screen-h) (monitor-size)])
-    (let* ([w (inexact->exact (* pixels-wide scale))]
-           [h (inexact->exact (* pixels-high scale))]
+    (let* ([w (inexact->exact (truncate (* pixels-wide scale)))]
+           [h (inexact->exact (truncate (* pixels-high scale)))]
 
            ; center the window
-           [x (inexact->exact (- (/ screen-w 2) (* w 0.5)))]
-           [y (inexact->exact (- (/ screen-h 2) (* h 0.5)))])
+           [x (inexact->exact (truncate (- (* screen-w 0.5) (* w 0.5))))]
+           [y (inexact->exact (truncate (- (* screen-h 0.5) (* h 0.5))))])
       (SetWindowSize w h)
       (SetWindowPosition x y))))
 

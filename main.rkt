@@ -12,9 +12,14 @@ All rights reserved.
 (require raylib)
 
 ;; ----------------------------------------------------
+;; Audio must be enabled for sounds created to work
+;; ----------------------------------------------------
 
-(unless (IsAudioDeviceReady)
-  (InitAudioDevice))
+(when (IsAudioDeviceReady)
+  (CloseAudioDevice))
+
+; re-initialize from scratch
+(InitAudioDevice)
 
 ;; ----------------------------------------------------
 

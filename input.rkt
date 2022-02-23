@@ -70,20 +70,24 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (action pred [rate #f])
+(define (action pred [hold #f] [rate #f])
   (let ([last #f])
     (λ ()
       (let ([time (GetTime)]
-            [pressed? (pred rate)])
+            [pressed? (pred hold)])
         (and pressed? (cond
-                        [(or (not last) (boolean? rate))
+                        [(or (not last) (not rate))
                          (begin0 #t (set! last time))]
 
-                        ;; has enough time elapsed since the last fire?
+                        ; allow hold, but no rate limit
+                        [(and hold (not rate))
+                         (begin0 #t (set! last time))]
+
+                        ; has enough time elapsed since the last fire?
                         [(> (- time last) (/ 1.0 rate))
                          (begin0 #t (set! last time))]
 
-                        ;; not enough time elapsed
+                        ; not enough time elapsed
                         [else #f]))))))
 
 ;; ----------------------------------------------------
