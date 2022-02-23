@@ -50,12 +50,15 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (play-music music)
+(define (play-music music #:loop [loop #t])
   (let ([stream (music%-stream music)])
 
     ; stop any currently playing music stream
     (when (playing-stream)
       (StopMusicStream (playing-stream)))
+
+    ; set looping flag
+    (set-Music-looping! stream loop)
 
     ; start this music stream
     (playing-stream stream)

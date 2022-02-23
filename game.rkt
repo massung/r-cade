@@ -32,8 +32,12 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define should-quit (make-parameter #f))
+
+;; ----------------------------------------------------
+
 (define (quit)
-  (CloseWindow))
+  (should-quit #t))
 
 ;; ----------------------------------------------------
 
@@ -55,7 +59,10 @@ All rights reserved.
   (update-music)
 
   ; render vram
-  (flip (frame) (gametime)))
+  (flip (frame) (gametime))
+
+  ; check for window close
+  (should-quit (WindowShouldClose)))
 
 ;; ----------------------------------------------------
 
@@ -85,12 +92,6 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (shutdown)
-  (StopSoundMulti)
-  (CloseWindow))
-
-;; ----------------------------------------------------
-
 (define (run initial-game-loop
              pixels-wide
              pixels-high
@@ -104,6 +105,7 @@ All rights reserved.
   (SetWindowState 'FLAG_WINDOW_RESIZABLE)
   (SetTargetFPS fps)
   (SetTraceLogLevel log-level)
+  (SetExitKey 'KEY_NULL)
   
   ; try and discover the scale
   (unless scale
@@ -146,7 +148,8 @@ All rights reserved.
        [playing-stream #f]
        
        ; initial game state loop
-       [game-loop initial-game-loop])
+       [game-loop initial-game-loop]
+       [should-quit #f])
 
     ; attempt to close the windw on shutdown (or re-run)
     (dynamic-wind
@@ -176,9 +179,10 @@ All rights reserved.
          (collect-garbage 'minor)
 
          ; run until the game quits
-         (unless (WindowShouldClose)
+         (unless (should-quit)
            (loop))))
 
      ; clean-up
      (λ ()
-       (shutdown)))))
+       (StopSoundMulti)
+       (CloseWindow)))))
