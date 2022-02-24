@@ -27,7 +27,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(struct music% [stream])
+(struct music% [riff stream])
 
 ;; ----------------------------------------------------
 
@@ -261,7 +261,7 @@ All rights reserved.
 
     ; compile the riff
     (let ([riff (make-riff samples sample-rate channels bytes-per-sample)])
-      (music% (LoadMusicStreamFromMemory ".wav" (riff-ptr riff) (riff-length riff))))))
+      (music% riff (LoadMusicStreamFromMemory ".wav" (riff-ptr riff) (riff-length riff))))))
 
 ;; ----------------------------------------------------
 

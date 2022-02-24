@@ -22,7 +22,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(struct sound% [wave sample])
+(struct sound% [riff wave sample])
 
 ;; ----------------------------------------------------
 
@@ -63,7 +63,7 @@ All rights reserved.
     ; create a riff from the sound buffer
     (let* ([riff (make-riff samples sample-rate channels bytes-per-sample)]
            [wave (LoadWaveFromMemory ".wav" (riff-ptr riff) (riff-length riff))])
-      (sound% wave (LoadSoundFromWave wave)))))
+      (sound% riff wave (LoadSoundFromWave wave)))))
 
 ;; ----------------------------------------------------
 

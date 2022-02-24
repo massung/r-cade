@@ -55,7 +55,7 @@ All rights reserved.
 (define (make-riff u8-samples sample-rate channels bytes-per-sample)
   (let* ([data-size (vector-length u8-samples)]
          [riff-size (+ riff-header-size data-size)]
-         [bytes (malloc _byte riff-size 'atomic)])
+         [bytes (malloc _byte riff-size 'atomic-interior)])
 
     ; copy the default riff header
     (for ([i (in-naturals)]
