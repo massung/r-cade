@@ -52,13 +52,10 @@ All rights reserved.
 
 (define (play-music music #:loop [loop #t])
   (let ([stream (music%-stream music)])
+    (set-Music-looping! stream loop)
 
     ; stop any currently playing music stream
-    (when (playing-stream)
-      (StopMusicStream (playing-stream)))
-
-    ; set looping flag
-    (set-Music-looping! stream loop)
+    (stop-music)
 
     ; start this music stream
     (playing-stream stream)
@@ -77,4 +74,6 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define stop-music StopMusicStream)
+(define (stop-music)
+  (when (playing-stream)
+    (StopMusicStream (playing-stream))))

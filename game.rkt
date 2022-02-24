@@ -72,52 +72,21 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (monitor-size)
-  (let ([monitor (GetCurrentMonitor)])
-    (values (GetMonitorWidth monitor)
-            (GetMonitorHeight monitor))))
-
-;; ----------------------------------------------------
-
-(define (resize-window pixels-wide pixels-high scale)
-  (let-values ([(screen-w screen-h) (monitor-size)])
-    (let* ([w (inexact->exact (truncate (* pixels-wide scale)))]
-           [h (inexact->exact (truncate (* pixels-high scale)))]
-
-           ; center the window
-           [x (inexact->exact (truncate (- (* screen-w 0.5) (* w 0.5))))]
-           [y (inexact->exact (truncate (- (* screen-h 0.5) (* h 0.5))))])
-      (SetWindowSize w h)
-      (SetWindowPosition x y))))
-
-;; ----------------------------------------------------
-
 (define (run initial-game-loop
              pixels-wide
              pixels-high
              #:init [init #f]
-             #:scale [scale #f]
              #:fps [fps 60]
              #:shader [effect #t]
              #:title [title "R-cade"]
              #:trace-log [log-level 'LOG_NONE])
-  (InitWindow pixels-wide pixels-high title)
+  (InitWindow 0 0 title)
   (SetWindowState 'FLAG_WINDOW_RESIZABLE)
   (SetTargetFPS fps)
   (SetTraceLogLevel log-level)
   (SetExitKey 'KEY_NULL)
-  
-  ; try and discover the scale
-  (unless scale
-    (let-values ([(w h) (monitor-size)])
-      (let ([scale-x (quotient (* w 0.6) pixels-wide)]
-            [scale-y (quotient (* h 0.6) pixels-high)])
-        (set! scale (max (min scale-x scale-y 3) 1)))))
 
-  ; resize the window accordingly
-  (resize-window pixels-wide pixels-high scale)
-
-  ;; create the sprite masks
+  ; create the sprite masks
   (make-sprite-masks)
 
   ; initialize global state
@@ -184,5 +153,6 @@ All rights reserved.
 
      ; clean-up
      (λ ()
+       (stop-music)
        (StopSoundMulti)
        (CloseWindow)))))
