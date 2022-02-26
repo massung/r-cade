@@ -223,7 +223,7 @@
   ; reset?
   (when (and (reset-ball) (> lives 0))
     (setup)))
-  
+
 ;; ----------------------------------------------------
 
 (define (play)

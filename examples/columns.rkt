@@ -290,13 +290,15 @@
 ;; ----------------------------------------------------
 
 (define (flash-matches matches)
+  (paused #t)
   (for ([c (range 8)])
     (for ([m matches])
       (let* ([x (first m)]
              [y (second m)]
              [g (gem-at x y)])
         (draw-gem x y g #:color (+ 8 c))))
-    (sync)))
+    (sync))
+  (paused #f))
 
 ;; ----------------------------------------------------
 
@@ -373,7 +375,9 @@
       (set! multiplier (+ multiplier 1)))
 
     ; drop the columns
-    (play-drop-anim))
+    (paused #t)
+    (play-drop-anim)
+    (paused #f))
 
   ; check for game over
   (if (for/or ([col columns])

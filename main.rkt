@@ -49,6 +49,7 @@ All rights reserved.
  frame
  frametime
  gametime
+ paused
  width
  height
  timer

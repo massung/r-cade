@@ -9,6 +9,7 @@ All rights reserved.
 
 |#
 
+(require ffi/unsafe)
 (require racket/match)
 
 ;; ----------------------------------------------------
@@ -74,12 +75,34 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define uniform-time (malloc _float 'atomic-interior))
+(define uniform-res (malloc (_array _float 2) 'atomic-interior))
+
+;; ----------------------------------------------------
+
 (define (flip frame time)
   (BeginMode2D camera)
   (ClearBackground bg)
   (let ([texture (RenderTexture2D-texture (target))])
-    (BeginShaderMode (shader))
-    (DrawTexture texture 0 0 WHITE)
-    (EndShaderMode))
+    (when (shader)
+      (BeginShaderMode (shader))
+
+      ; update the r-cade unfiforms
+      (ptr-set! uniform-time _float time)
+      (ptr-set! uniform-res _float 0 (exact->inexact (width)))
+      (ptr-set! uniform-res _float 1 (exact->inexact (height)))
+      
+      ; set r-cade custom shader values
+      (let ([res-loc (GetShaderLocation (shader) "res")]
+            [time-loc (GetShaderLocation (shader) "time")])
+        (SetShaderValueV (shader) res-loc uniform-res 'SHADER_UNIFORM_VEC2)
+        (SetShaderValue (shader) time-loc uniform-time 'SHADER_UNIFORM_FLOAT)))
+
+    ; render the texture - flip y
+    (let ([r (make-Rectangle 0.0 0.0 (exact->inexact (width)) (exact->inexact (- (height))))])
+      (DrawTextureRec texture r (Vector2Zero) WHITE))
+
+    (when (shader)
+      (EndShaderMode)))
   (EndMode2D)
   (EndDrawing))

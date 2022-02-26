@@ -44,7 +44,7 @@ All rights reserved.
 
 (define (update-button btn pred)
   (let ([update! (λ (time)
-                   (and (pred btn) (or time (GetTime))))])
+                   (and (pred btn) (+ (frametime) (or time 0))))])
     (hash-update! (buttons) btn update! (λ () #f))))
 
 ;; ----------------------------------------------------
@@ -108,8 +108,7 @@ All rights reserved.
                                [(not rate) #t]
 
                                ; enough time elapsed for another hit
-                               [else (let ([dt (- (GetTime) time)])
-                                       (> dt (/ hits rate)))]))])
+                               [else (> time (/ hits rate))]))])
 
         ; increment hit count or reset hit
         (begin0 hit?

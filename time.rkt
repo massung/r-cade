@@ -23,8 +23,12 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define framerate GetFPS)
-(define frametime GetFrameTime)
 (define gametime GetTime)
+
+;; ----------------------------------------------------
+
+(define (frametime)
+  (if (paused) 0 (GetFrameTime)))
 
 ;; ----------------------------------------------------
 

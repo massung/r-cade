@@ -37,28 +37,80 @@ for their hard work!!
     ; from default vertex shader
     "in vec2 fragTexCoord;"
     "in vec4 fragColor;"
+
+    ; final output
     "out vec4 finalColor;"
     
     ; input values from raylib
     "uniform sampler2D texture0;"
     "uniform vec4 colDiffuse;"
-    
-    ; custom inputs
+
+    ; input values from r-cade
+    "uniform vec2 res;"
     "uniform float time;"
     
     ; entry point
     "void main() {"
-    "    vec2 uv = vec2(fragTexCoord.x, -fragTexCoord.y);"
-    "    vec3 pixel = texture(texture0, uv).rgb;"
+    "    vec3 pixel = texture(texture0, fragTexCoord).rgb;"
     
     ; every 3rd pixel should be a scanline
-    "    float fmin = 0.25;"
+    "    float fmin = 0.50;"
     "    float fmod = mod(gl_FragCoord.y, 3.0);"
     "    float fstep = fmin + (1.0 - fmin) * fmod;"
     
     ; alpha the color by the scanline
     "    finalColor = vec4(pixel, fstep);"
     "}"))
+
+;; ----------------------------------------------------
+
+(define bloom-fragment-shader
+  '("#version 330"
+
+    ; type precision
+    "precision mediump float;"
+
+    ; from default vertex shader
+    "in vec2 fragTexCoord;"
+    "in vec4 fragColor;"
+    
+    ; final output
+    "out vec4 finalColor;"
+
+    ; input values from raylib
+    "uniform sampler2D texture0;"
+    "uniform vec4 colDiffuse;"
+
+    ; input values from r-cade
+    "uniform vec2 res;"
+    "uniform float time;"
+
+    ; shader constants
+    "const float samples = 5.0;"
+    "const float quality = 2.5;"
+
+    ; entry point
+    "void main() {"
+    "    vec4 sum = vec3(0.0);"
+    "    vec2 sizeFactor = vec2(1.0) / res * quality;"
+
+    ; vram texture color
+    "    vec3 pixel = texture(texture0, fragTexCoord);"
+
+    ; sample range - ideally (samples-1)/2
+    "    const int range = 2;"
+    
+    ; sample surrounding pixels
+    "    for(int x = -range; x <= range; x++) {"
+    "        for(int y = -range; y <= range; y++) {"
+    "            sum += texture(texture0, fragTexCoord + vec2(x, y) * sizeFactor) * 2;"
+    "        }"
+    "    }"
+
+    ; calculate final color
+    "    finalColor = (sum / (samples*samples)) + pixel;"
+    "}"
+    ))
 
 ;; ----------------------------------------------------
 
