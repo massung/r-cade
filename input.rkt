@@ -18,6 +18,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (require "time.rkt")
+(require "video.rkt")
 
 ;; ----------------------------------------------------
 
@@ -35,8 +36,9 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (update-mouse-pos)
-  (mouse-x (GetMouseX))
-  (mouse-y (GetMouseY)))
+  (let ([pos (GetScreenToWorld2D (GetMousePosition) camera)])
+    (mouse-x (Vector2-x pos))
+    (mouse-y (Vector2-y pos))))
 
 ;; ----------------------------------------------------
 
@@ -85,6 +87,7 @@ All rights reserved.
 (define (btn-any)
   (or (btn-start)
       (btn-select)
+      (btn-jump)
       (btn-z)
       (btn-x)
       (btn-mouse)))
