@@ -21,12 +21,16 @@
 
 ;; ----------------------------------------------------
 
+(define select-font (action btn-select))
+
+;; ----------------------------------------------------
+
 (define (test-font)
   (cls)
   (color 7)
 
   ; cycle through fonts with select
-  (when (btn-select)
+  (when (select-font)
     (set! show-font (remainder (+ show-font 1) 3)))
 
   ; current font

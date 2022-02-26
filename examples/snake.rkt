@@ -30,7 +30,7 @@
 
 ;; ----------------------------------------------------
 
-(define yum (r:sweep 300 100 0.1 (r:voice r:square-wave r:basic-envelope)))
+(define yum (r:sweep 300 100 0.1 (r:voice r:square-wave r:fade-out-envelope)))
 
 ;; ----------------------------------------------------
 
@@ -270,11 +270,7 @@
         (draw-health)
         (draw-food)
         (draw-snake)
-        (draw-score)))
-
-  ; quit?
-  (when (r:btn-quit)
-    (r:quit)))
+        (draw-score))))
 
 ;; ----------------------------------------------------
 

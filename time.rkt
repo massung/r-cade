@@ -28,7 +28,7 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (timer time [loop #f])
+(define (timer time #:loop [loop #f])
   (let ([this time])
     (λ (#:reset [reset #f])
       (set! this (if reset time (- this (frametime))))

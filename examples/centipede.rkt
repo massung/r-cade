@@ -241,24 +241,20 @@
         [max-x (- (width) 5)]
         [max-y (- (height) 8)]
         [min-y (- (height) player-area)])
-    (when (btn-left #t)
+    (when (btn-left)
       (set! player-x (max (- player-x (* dx (frametime))) 0)))
-    (when (btn-right #t)
+    (when (btn-right)
       (set! player-x (min (+ player-x (* dx (frametime))) max-x)))
-    (when (btn-up #t)
+    (when (btn-up)
       (set! player-y (max (- player-y (* dy (frametime))) min-y)))
-    (when (btn-down #t)
+    (when (btn-down)
       (set! player-y (min (+ player-y (* dy (frametime))) max-y))))
 
   ; shooting
   (unless (laser?)
-    (when (or (btn-z #t) (btn-x #t))
+    (when (or (btn-z) (btn-x))
       (set! laser-x (+ (exact-round player-x) 2))
-      (set! laser-y (- (exact-round player-y) 2))))
-
-  ; handle quit
-  (when (btn-quit)
-    (quit)))
+      (set! laser-y (- (exact-round player-y) 2)))))
 
 ;; ----------------------------------------------------
 

@@ -58,7 +58,7 @@ All rights reserved.
  btn-any
  btn-start
  btn-select
- btn-quit
+ btn-jump
  btn-z
  btn-x
  btn-up

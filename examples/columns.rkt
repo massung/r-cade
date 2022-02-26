@@ -481,7 +481,7 @@
     (text x (+ y 2) "GAME OVER"))
 
   ; done
-  (wait (λ () (or (btn-quit) (btn-start))))
+  (wait btn-start)
   (if (btn-start)
       (goto start-screen)
       (quit)))
@@ -652,10 +652,7 @@
   (when (left-action)
     (move-triplet -1))
   (when (right-action)
-    (move-triplet +1))
-
-  (when (btn-quit)
-    (quit)))
+    (move-triplet +1)))
 
 ;; ----------------------------------------------------
 

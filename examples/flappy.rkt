@@ -50,7 +50,7 @@
 
 ;; ----------------------------------------------------
 
-(define flap (action btn-z))
+(define flap (action btn-jump))
 
 ;; ----------------------------------------------------
 
@@ -194,7 +194,7 @@
   (let ([s (cond
               [game-over "Game Over! START to Try Again"]
               [game-started (format "SCORE: ~a" score)]
-              [else "Press Z to flap..."])])
+              [else "Press JUMP to flap..."])])
     (color 0)
     (text 1 2 s)
     (color 7)
@@ -247,11 +247,7 @@
 
     ; restart?
     (when (and game-over (btn-start))
-      (setup))
-
-    ; quit?
-    (when (btn-quit)
-      (quit))))
+      (setup))))
 
 ;; ----------------------------------------------------
 

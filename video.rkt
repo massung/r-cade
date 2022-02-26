@@ -42,7 +42,11 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define (flip frame time)
+(define camera (make-Camera2D (Vector2Zero) (Vector2Zero) 0.0 1.0))
+
+;; ----------------------------------------------------
+
+(define (update-camera)
   (let* ([screen-w (GetScreenWidth)]
          [screen-h (GetScreenHeight)]
 
@@ -59,19 +63,22 @@ All rights reserved.
          
          ; center of the display
          [x (* w 0.5)]
-         [y (* h 0.5)]
+         [y (* h 0.5)])
 
-         ; source rectangle - flip y
-         [source (make-Rectangle 0.0 0.0 w (- h))]
+    ; top-left offset to render at
+    (set-Vector2-x! (Camera2D-offset camera) (- (/ screen-w 2) x))
+    (set-Vector2-y! (Camera2D-offset camera) (- (/ screen-h 2) y))
 
-         ; destination rectangle
-         [pos (make-Vector2 (- (/ screen-w 2) x) (- (/ screen-h 2) y))])
+    ; scale factor
+    (set-Camera2D-zoom! camera scale)))
 
-    ; prepare the render sprite
-    (BeginDrawing)
-    (ClearBackground bg)
-    (let ([texture (RenderTexture2D-texture (target))])
-      (BeginShaderMode (shader))
-      (DrawTextureEx texture pos 0.0 scale WHITE)
-      (EndShaderMode))
-    (EndDrawing)))
+;; ----------------------------------------------------
+
+(define (flip frame time)
+  (BeginMode2D camera)
+  (ClearBackground bg)
+  (let ([texture (RenderTexture2D-texture (target))])
+    (BeginShaderMode (shader))
+    (DrawTexture texture 0 0 WHITE)
+    (EndShaderMode))
+  (EndDrawing))

@@ -222,11 +222,7 @@
   
   ; reset?
   (when (and (reset-ball) (> lives 0))
-    (setup))
-  
-  ; should the demo end?
-  (when (btn-quit)
-    (quit)))
+    (setup)))
   
 ;; ----------------------------------------------------
 

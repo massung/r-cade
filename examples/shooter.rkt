@@ -258,7 +258,7 @@
 ;; ----------------------------------------------------
 
 (define btn-thrust r:btn-up)
-(define btn-shoot (r:action r:btn-z 6))
+(define btn-shoot (r:action r:btn-z #t 6))
 (define btn-blast (r:action r:btn-x))
 
 ;; ----------------------------------------------------
@@ -487,11 +487,7 @@
     (send player turn 270))
   (when (r:btn-up)
     (expel-exhaust)
-    (send player apply-impulse 1))
-
-  ; check for game quit
-  (when (r:btn-quit)
-    (r:quit)))
+    (send player apply-impulse 1)))
 
 ;; ----------------------------------------------------
 

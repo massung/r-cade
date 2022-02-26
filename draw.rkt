@@ -109,18 +109,26 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (line x1 y1 x2 y2)
-  (DrawLine x1 y1 x2 y2 draw-color))
+  (let ([v1 (make-Vector2 (real->double-flonum x1) (real->double-flonum y1))]
+        [v2 (make-Vector2 (real->double-flonum x2) (real->double-flonum y2))])
+    (DrawLineV v1 v2 draw-color)))
 
 ;; ----------------------------------------------------
 
 (define (rect x y w h #:fill [fill #f])
-  (if fill
-      (DrawRectangle x y w h draw-color)
-      (DrawRectangleLines x y w h draw-color)))
+  (let ([r (make-Rectangle (real->double-flonum x)
+                           (real->double-flonum y)
+                           (real->double-flonum w)
+                           (real->double-flonum h))])
+    (if fill
+        (DrawRectangleRec r draw-color)
+        (DrawRectangleLinesEx r 1.0 draw-color))))
 
 ;; ----------------------------------------------------
 
 (define (circle x y r #:fill [fill #f])
-  (if fill
-      (DrawCircle x y r draw-color)
-      (DrawCircleLines x y r draw-color)))
+  (let ([vx (inexact->exact (round x))]
+        [vy (inexact->exact (round y))])
+    (if fill
+        (DrawCircle vx vy (real->double-flonum r) draw-color)
+        (DrawCircleLines vx vy (real->double-flonum r) draw-color))))

@@ -388,16 +388,12 @@
 
   ; end of race?
   (when (> (horse-x player) (+ finish-line 100))
-    (award-ribbon))
-
-  ; quit game?
-  (when (btn-quit)
-    (quit)))
+    (award-ribbon)))
 
 ;; ----------------------------------------------------
 
 (define (play)
-  (run game-loop 180 112 #:init next-race #:scale 3 #:title "R-cade: Derby"))
+  (run game-loop 180 112 #:init next-race #:title "R-cade: Derby"))
 
 ;; ----------------------------------------------------
 

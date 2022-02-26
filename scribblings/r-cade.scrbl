@@ -23,7 +23,6 @@ All the most recent updates, blog posts, etc. can be found at @url{http://r-cade
               [width exact-nonnegative-integer?]
               [height exact-nonnegative-integer?]
               [#:init init procedure? #f]
-              [#:scale scale-factor exact-nonnegative-integer? #f]
               [#:fps frame-rate exact-nonnegative-integer? 60]
               [#:shader enable-shader boolean? #t]
               [#:title window-title string? "R-cade"])
@@ -35,8 +34,6 @@ The @racket[game-loop] parameter is a function you provide, which will be called
 The @racket[width] and @racket[height] parameters define the size of video memory (not the size of the window!).
 
 The @racket[init] procedure - if provided - is called before the @racket[game-loop] starts. If you have initialization or setup code that requires R-cade state be initialized, this is where you can safely do it.
-
-The @racket[scale-factor] parameter will determine the initial size of the window. The default will let auto pick a scale factor that is appropriate given the size of the display.
 
 The @racket[frame-rate] is the number of times per second the @racket[game-loop] function will be called the window will update with what's stored in VRAM.
 

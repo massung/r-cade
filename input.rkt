@@ -25,6 +25,10 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
+(define buttons (make-parameter #f))
+
+;; ----------------------------------------------------
+
 (define mouse-x (make-parameter #f))
 (define mouse-y (make-parameter #f))
 
@@ -36,34 +40,51 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define-syntax (define-btn stx)
-  (syntax-case stx ()
-    [(_ btn id pressed? down?)
-     #'(define (btn [hold? #f])
-         ((if hold? down? pressed?) id))]))
+(define (update-button btn pred)
+  (let ([update! (λ (time)
+                   (and (pred btn) (or time (GetTime))))])
+    (hash-update! (buttons) btn update! (λ () #f))))
 
 ;; ----------------------------------------------------
 
-(define-btn btn-start 'KEY_ENTER IsKeyPressed IsKeyDown)
-(define-btn btn-select 'KEY_SPACE IsKeyPressed IsKeyDown)
-(define-btn btn-quit 'KEY_ESCAPE IsKeyPressed IsKeyDown)
-(define-btn btn-z 'KEY_Z IsKeyPressed IsKeyDown)
-(define-btn btn-x 'KEY_X IsKeyPressed IsKeyDown)
-(define-btn btn-up 'KEY_UP IsKeyPressed IsKeyDown)
-(define-btn btn-down 'KEY_DOWN IsKeyPressed IsKeyDown)
-(define-btn btn-right 'KEY_RIGHT IsKeyPressed IsKeyDown)
-(define-btn btn-left 'KEY_LEFT IsKeyPressed IsKeyDown)
+(define (update-buttons)
+  (for ([btn '(KEY_Z
+               KEY_X
+               KEY_UP
+               KEY_DOWN
+               KEY_RIGHT
+               KEY_LEFT
+               KEY_TAB
+               KEY_SPACE
+               KEY_ENTER)])
+    (update-button btn IsKeyDown))
+
+  ; mouse button
+  (update-button 'MOUSE_BUTTON_LEFT IsMouseButtonDown))
 
 ;; ----------------------------------------------------
 
-(define-btn btn-mouse 'MOUSE_BUTTON_LEFT IsMouseButtonPressed IsMouseButtonDown)
+(define (btn? btn)
+  (hash-ref (buttons) btn #f))
+
+;; ----------------------------------------------------
+
+(define (btn-z) (btn? 'KEY_Z))
+(define (btn-x) (btn? 'KEY_X))
+(define (btn-up) (btn? 'KEY_UP))
+(define (btn-down) (btn? 'KEY_DOWN))
+(define (btn-right) (btn? 'KEY_RIGHT))
+(define (btn-left) (btn? 'KEY_LEFT))
+(define (btn-start) (btn? 'KEY_ENTER))
+(define (btn-select) (btn? 'KEY_TAB))
+(define (btn-jump) (btn? 'KEY_SPACE))
+(define (btn-mouse) (btn? 'MOUSE_BUTTON_LEFT))
 
 ;; ----------------------------------------------------
 
 (define (btn-any)
   (or (btn-start)
       (btn-select)
-      (btn-quit)
       (btn-z)
       (btn-x)
       (btn-mouse)))
@@ -71,24 +92,29 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (action pred [hold #f] [rate #f])
-  (let ([last #f])
+  (let ([hits 0])
     (λ ()
-      (let ([time (GetTime)]
-            [pressed? (pred hold)])
-        (and pressed? (cond
-                        [(or (not last) (not rate))
-                         (begin0 #t (set! last time))]
+      (let* ([time (pred)]
+             [hit? (and time (cond
+                               [(zero? hits) #t]
 
-                        ; allow hold, but no rate limit
-                        [(and hold (not rate))
-                         (begin0 #t (set! last time))]
+                               ; no repeats allowed
+                               [(not hold) #f]
 
-                        ; has enough time elapsed since the last fire?
-                        [(> (- time last) (/ 1.0 rate))
-                         (begin0 #t (set! last time))]
+                               ; no rate limit
+                               [(not rate) #t]
 
-                        ; not enough time elapsed
-                        [else #f]))))))
+                               ; enough time elapsed for another hit
+                               [else (let ([dt (- (GetTime) time)])
+                                       (> dt (/ hits rate)))]))])
+
+        ; increment hit count or reset hit
+        (begin0 hit?
+                (cond
+                  [hit? (set! hits (add1 hits))]
+
+                  ; button was released, reset hits
+                  [(not time) (set! hits 0)]))))))
 
 ;; ----------------------------------------------------
 

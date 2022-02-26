@@ -431,11 +431,7 @@
 
   ; controls
   (when (and (launch-btn) (not (null? enemy-missiles)))
-    (launch-player-missile))
-
-  ; quit game?
-  (when (btn-quit)
-    (quit)))
+    (launch-player-missile)))
 
 ;; ----------------------------------------------------
 

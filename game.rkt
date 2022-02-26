@@ -41,34 +41,42 @@ All rights reserved.
 
 ;; ----------------------------------------------------
 
-(define game-loop
-  (make-parameter (λ ()
-                    (cls)
-                    (when (btn-quit)
-                      (quit)))))
-
-;; ----------------------------------------------------
-
-(define goto game-loop)
+(define goto (make-parameter cls))
 
 ;; ----------------------------------------------------
 
 (define (sync)
+  (should-quit (WindowShouldClose))
+
+  ; all per-frame processing
+  (update-camera)
   (update-frame)
+  (update-buttons)
   (update-mouse-pos)
   (update-music)
 
-  ; render vram
+  ; stop rendering to vram
+  (EndTextureMode)
+
+  ; copy vram to display
   (flip (frame) (gametime))
 
-  ; check for window close
-  (should-quit (WindowShouldClose)))
+  ; begin rendering to vram
+  (BeginTextureMode (target)))
 
 ;; ----------------------------------------------------
 
 (define (wait [until btn-any])
   (do () [(or (until) (WindowShouldClose)) #f]
     (sync)))
+
+;; ----------------------------------------------------
+
+(define (calc-window-size w h [max-dim 600])
+  (let ([min-dim (quotient 600 (quotient (max w h) (min w h)))])
+    (if (> w h)
+        (values 600 min-dim)
+        (values min-dim 600))))
 
 ;; ----------------------------------------------------
 
@@ -80,11 +88,11 @@ All rights reserved.
              #:shader [effect #t]
              #:title [title "R-cade"]
              #:trace-log [log-level 'LOG_NONE])
-  (InitWindow 0 0 title)
-  (SetWindowState 'FLAG_WINDOW_RESIZABLE)
-  (SetTargetFPS fps)
-  (SetTraceLogLevel log-level)
-  (SetExitKey 'KEY_NULL)
+  (let-values ([(w h) (calc-window-size pixels-wide pixels-high)])
+    (InitWindow w h title)
+    (SetWindowState 'FLAG_WINDOW_RESIZABLE)
+    (SetTargetFPS fps)
+    (SetTraceLogLevel log-level))
 
   ; create the sprite masks
   (make-sprite-masks)
@@ -106,6 +114,9 @@ All rights reserved.
        [width pixels-wide]
        [height pixels-high]
 
+       ; button map
+       [buttons (make-hasheq)]
+
        ; mouse position
        [mouse-x 0]
        [mouse-y 0]
@@ -117,7 +128,7 @@ All rights reserved.
        [playing-stream #f]
        
        ; initial game state loop
-       [game-loop initial-game-loop]
+       [goto initial-game-loop]
        [should-quit #f])
 
     ; attempt to close the windw on shutdown (or re-run)
@@ -131,8 +142,7 @@ All rights reserved.
        ; defaults
        (BeginTextureMode (target))
        (cls)
-       (color 7)
-       (EndTextureMode))
+       (color 7))
         
      ; main game loop
      (λ ()
@@ -140,9 +150,7 @@ All rights reserved.
          (sync)
 
          ; run main game loop
-         (BeginTextureMode (target))
-         ((game-loop))
-         (EndTextureMode)
+         ((goto))
  
          ; perform a small garbage collect
          (collect-garbage 'minor)
@@ -155,4 +163,5 @@ All rights reserved.
      (λ ()
        (stop-music)
        (StopSoundMulti)
+       (EnableCursor)
        (CloseWindow)))))
