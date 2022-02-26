@@ -33,7 +33,7 @@ All rights reserved.
 ;; ----------------------------------------------------
 
 (define (play-sound sound)
-  (PlaySoundMulti (sound%-sample sound)))
+  (PlaySound (sound%-sample sound)))
 
 ;; ----------------------------------------------------
 

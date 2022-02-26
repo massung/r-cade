@@ -254,6 +254,7 @@
 ;; ----------------------------------------------------
 
 (define shoot-sound (r:sweep 600 400 0.15 (r:voice r:sawtooth-wave r:fade-out-envelope)))
+(define thrust-sound (r:sweep 150 50 0.05 (r:voice r:sawtooth-wave (r:envelope 0.3 0.0))))
 
 ;; ----------------------------------------------------
 
@@ -363,6 +364,7 @@
                   [y y]
                   [vx vx]
                   [vy vy])])
+      (r:play-sound thrust-sound)
       (set! exhaust (cons e exhaust)))))
 
 ;; ----------------------------------------------------
