@@ -118,21 +118,3 @@ All rights reserved.
 
                   ; button was released, reset hits
                   [(not time) (set! hits 0)]))))))
-
-;; ----------------------------------------------------
-
-#;(define (on-mouse-moved event)
-  (let* ([x (sfMouseMoveEvent-x event)]
-         [y (sfMouseMoveEvent-y event)]
-
-         ; window coordinate
-         [pixel (make-sfVector2i x y)]
-
-         ; convert to game coordinate
-         [coord (sfRenderWindow_mapPixelToCoords (window) pixel #f)]
-
-         ; inverse transform of sprite
-         [inv (sfSprite_getInverseTransform (sprite))]
-         [point (sfTransform_transformPoint inv coord)])
-    (mouse-x (inexact->exact (floor (sfVector2f-x point))))
-    (mouse-y (inexact->exact (floor (sfVector2f-y point))))))

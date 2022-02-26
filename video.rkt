@@ -81,4 +81,5 @@ All rights reserved.
     (BeginShaderMode (shader))
     (DrawTexture texture 0 0 WHITE)
     (EndShaderMode))
+  (EndMode2D)
   (EndDrawing))

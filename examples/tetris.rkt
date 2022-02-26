@@ -266,11 +266,7 @@
             (set! piece-x (- piece-x 1))))
         (when (move-right)
           (unless (test-shape (+ piece-x 1) piece-y piece angle)
-            (set! piece-x (+ piece-x 1))))))
-
-  ; quit the game?
-  (when (btn-quit)
-    (quit)))
+            (set! piece-x (+ piece-x 1)))))))
 
 ;; ----------------------------------------------------
 
